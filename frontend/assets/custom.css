@@ -1,0 +1,12 @@
+.busbox {
+    width: 35px;
+    /* border: 1px solid orangered; */
+    background-color: lightgray;
+    margin: 5px;
+    float: left;
+    text-align: center;
+}
+
+.bus-description {
+    float: right;
+} 
