@@ -128,7 +128,7 @@ function displayTrains(trains) {
     } else {
         
         const table = document.createElement('table')
-        table.classList.add('table')
+        table.classList.add('table', 'is-hoverable')
         const tableBody = document.createElement('tbody')
         table.appendChild(tableBody)
         
