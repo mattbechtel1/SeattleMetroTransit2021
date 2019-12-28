@@ -18,8 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
 })
 
 function popUpSearch(searchFunction) {
-    const mainContainer = document.getElementById('main-container')
-    mainContainer.innerHTML = ""
+    const mainContainer = clearAndReturnMain()
 
     const form = document.createElement('form');
     form.id = 'search-form'
@@ -122,7 +121,7 @@ function getBuses(data, stopId) {
         mainContainer.innerHTML = ""
         
         const table = document.createElement('table')
-        table.classList.add('table')
+        table.classList.add('table', 'is-hoverable')
         const tableBody = document.createElement('tbody')
         table.appendChild(tableBody)
         
@@ -208,8 +207,7 @@ function getRoutes(routeList) {
 }
 
 function displaySchedule(schedule) {
-    const mainContainer = document.getElementById('main-container')
-    mainContainer.innerHTML = ""
+    const mainContainer = clearAndReturnMain()
 
     let div = document.createElement('div')
     div.innerText = "You have selected " + schedule.Name +"."
@@ -283,8 +281,7 @@ function listRouteStops(event, schedule) {
         ul.appendChild(li)
     })
 
-    const mainContainer = document.getElementById('main-container')
-    mainContainer.innerHTML = ""
+    const mainContainer = clearAndReturnMain()
     mainContainer.append(ul)
 }
 
