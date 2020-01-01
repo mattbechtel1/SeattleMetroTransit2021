@@ -375,5 +375,4 @@ function setAlarm(event, stopId, tripId) {
             getBuses(data, stopId)
         })
     }, 30000)
-    .catch(error => alert(error.message))
 }
