@@ -13,7 +13,6 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => getRoutes(data.Routes))
         });
-    // login/out button
     // favorites button
 })
 
@@ -40,10 +39,7 @@ function popUpSearch(searchFunction) {
     const innerDiv2 = document.createElement('div')
     innerDiv2.classList.add('control')
 
-    const submitBtn = document.createElement('button');
-    submitBtn.classList.add('button', 'is-primary')
-    submitBtn.innerText = 'Search';
-    submitBtn.type = 'submit';
+    const submitBtn = createSubmit('Search')
     innerDiv2.appendChild(submitBtn)
 
     outerDiv.append(innerDiv1, innerDiv2)
