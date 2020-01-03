@@ -1,4 +1,5 @@
 const sessionURL = 'http://localhost:3000/login'
+let userId
 
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('log').addEventListener('click', showLogIn)
@@ -56,7 +57,7 @@ let createSubmit = function(btnText) {
     return submitBtn
 }
 
-class FormObject {
+class UserFormObject {
     constructor(email, password) {
         this.email = email;
         this.password = password;
@@ -73,11 +74,14 @@ class FormObject {
 function startSession(event) {
     event.preventDefault()
 
-    let formObj = new FormObject(event.target.email.value, event.target.password.value)
+    let formObj = new UserFormObject(event.target.email.value, event.target.password.value)
     
     fetch(sessionURL, hostedObj('POST', formObj.objectify))
     .then(response => response.json())
-    .then(user => greetUser(user))
+    .then(function(user) {
+        userId = user.id
+        greetUser(user)
+    })
 }
 
 function greetUser(user) {

@@ -109,12 +109,33 @@ function routeSearch(event) {
     .catch(error => alert(error.message))
 }
 
+function buildHeader(stopId) {
+    const favoriteDiv = document.createElement('div')
+    let describeText = function(stopId) {
+        if (!isNaN(parseInt(stopId))) {
+            return 'stop #' + stopId + '.'
+        } else {
+            return stopId + ' station.'
+        }
+    }(stopId)
+    favoriteDiv.innerText = "You've selected " + describeText
+    const favoriteHeart = document.createElement('a')
+    favoriteHeart.innerText = '💗'
+    favoriteHeart.dataset.stop = stopId
+    favoriteHeart.addEventListener('click', addFavorite)
+    favoriteDiv.appendChild(favoriteHeart)
+
+    return favoriteDiv
+}
+
 function getBuses(data, stopId) {
     const mainContainer = document.getElementById('main-container')
     if (data.Predictions.length < 1) {
         mainContainer.innerHTML = "No buses found."
     } else {
         mainContainer.innerHTML = ""
+
+        const heading = buildHeader(stopId)
         
         const table = document.createElement('table')
         table.classList.add('table', 'is-hoverable')
@@ -146,7 +167,7 @@ function getBuses(data, stopId) {
             row.append(busNum, busMinutes, alarmSet)
             tableBody.appendChild(row)
         })
-        mainContainer.appendChild(table)
+        mainContainer.append(heading, table)
     }
 }
 

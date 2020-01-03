@@ -31,7 +31,7 @@ function listStations(stations) {
 
     const form = buildDropDownForm(stations, function(station) {
         const option = document.createElement('option')
-        option.value = station.Code
+        option.value = [station.Code, station.Name]
         option.innerText = station.Name
 
         return option
@@ -39,10 +39,10 @@ function listStations(stations) {
 
     form.addEventListener('submit', function(e) {
         e.preventDefault()
-
-        fetch(stationPredictionsUrlPrefix + event.target.opt.value, configObj)
+        
+        fetch(stationPredictionsUrlPrefix + e.target.opt.value.split(',')[0], configObj)
         .then(response => response.json())
-        .then(data => displayTrains(data.Trains))
+        .then(data => displayTrains(data.Trains, e.target.opt.value.split(',')[1]))
     })
 
     mainContainer.appendChild(form)
@@ -120,13 +120,15 @@ function buildDropDownForm(optionsList, forEachCallback) {
     return form
 }
 
-function displayTrains(trains) {
+function displayTrains(trains, stationName) {
     const mainContainer = clearAndReturnMain()
     
     if (trains.length < 1) {
-        mainContainer.innerHTML = "No buses found."
+        mainContainer.innerHTML = "No trains found."
     } else {
         
+        const heading = buildHeader(stationName)
+
         const table = document.createElement('table')
         table.classList.add('table', 'is-hoverable')
         const tableBody = document.createElement('tbody')
@@ -165,7 +167,7 @@ function displayTrains(trains) {
                 )
             tableBody.appendChild(row)
         })
-        mainContainer.appendChild(table)
+        mainContainer.append(heading, table)
     }
 
 }
