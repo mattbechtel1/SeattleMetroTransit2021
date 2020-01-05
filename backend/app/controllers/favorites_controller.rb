@@ -2,13 +2,7 @@ class FavoritesController < ApplicationController
 
     def create
         newFav = Favorite.create(favoriteParams)
-        # byebug
         render json: newFav
-    end
-
-    def index
-        favorites = Favorite.all
-        render json: favorites
     end
 
 

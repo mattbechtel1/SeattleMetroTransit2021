@@ -5,6 +5,11 @@ class UserSerializer
 
     def to_serialized_json
         format = { 
+            include: {
+                favorites: {
+                    only: [:url]
+                }
+            },
             only: [:email, :id]
         }
         @user.to_json(format)
