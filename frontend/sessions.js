@@ -87,4 +87,4 @@ function startSession(event) {
 function greetUser(user) {
     document.getElementById('notification-block').innerText = "Welcome " + user.email
     clearAndReturnMain()
-}
+} 
