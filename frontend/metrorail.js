@@ -42,7 +42,10 @@ function listStations(stations) {
         
         fetch(stationPredictionsUrlPrefix + e.target.opt.value.split(',')[0], configObj)
         .then(response => response.json())
-        .then(data => displayTrains(data.Trains, e.target.opt.value.split(',')[1]))
+        .then(data => {
+            console.log(data)
+            displayTrains(data.Trains, e.target.opt.value.split(',')[1])
+        })
     })
 
     mainContainer.appendChild(form)

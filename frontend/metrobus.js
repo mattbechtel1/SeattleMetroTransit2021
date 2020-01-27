@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => getRoutes(data.Routes))
         });
-    // favorites button
+    document.getElementById('favorites').addEventListener('click', getFavorites)
 })
 
 function popUpSearch(searchFunction) {
@@ -122,6 +122,7 @@ function buildHeader(stopId) {
     const favoriteHeart = document.createElement('a')
     favoriteHeart.innerText = '💗'
     favoriteHeart.dataset.stop = stopId
+    favoriteHeart.dataset.stopType = 'bus'
     favoriteHeart.addEventListener('click', addFavorite)
     favoriteDiv.appendChild(favoriteHeart)
 

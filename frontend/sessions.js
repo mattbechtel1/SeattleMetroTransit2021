@@ -88,3 +88,16 @@ function greetUser(user) {
     document.getElementById('notification-block').innerText = "Welcome " + user.email
     clearAndReturnMain()
 } 
+
+function getFavorites() {
+    fetch(`http://localhost:3000/users/${userId}`)
+    .then(response => response.json())
+    .then(data => data.favorites)
+    .then(displayFavorites)
+}
+
+function displayFavorites(favList) {
+    const mainContainer = clearAndReturnMain()
+    debugger
+    const listContainer = document.createElement('ul')
+}

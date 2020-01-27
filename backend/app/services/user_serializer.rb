@@ -7,7 +7,7 @@ class UserSerializer
         format = { 
             include: {
                 favorites: {
-                    only: [:url, :description]
+                    except: [:created_at, :updated_at]
                 }
             },
             only: [:email, :id]
