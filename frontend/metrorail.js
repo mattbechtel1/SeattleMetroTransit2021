@@ -43,7 +43,6 @@ function listStations(stations) {
         fetch(stationPredictionsUrlPrefix + e.target.opt.value.split(',')[0], configObj)
         .then(response => response.json())
         .then(data => {
-            console.log(data)
             displayTrains(data.Trains, e.target.opt.value.split(',')[1])
         })
     })
@@ -163,6 +162,7 @@ function displayTrains(trains, stationName) {
             // alarmSet.dataset.stop = stopId;
             // alarmSet.dataset.minutes = prediction.Minutes;
             // alarmSet.dataset.tripId = prediction.TripID;
+            // alarmset.classList.add('clickable-emoji')
             // alarmSet.innerText = '⏰';
             
             row.append(trainColor, trainMinutes

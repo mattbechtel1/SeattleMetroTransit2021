@@ -120,6 +120,7 @@ function buildHeader(stopId) {
     }(stopId)
     favoriteDiv.innerText = "You've selected " + describeText
     const favoriteHeart = document.createElement('a')
+    favoriteHeart.classList.add('clickable-emoji')
     favoriteHeart.innerText = '💗'
     favoriteHeart.dataset.stop = stopId
     favoriteHeart.dataset.stopType = 'bus'
@@ -163,6 +164,7 @@ function getBuses(data, stopId) {
             alarmSet.dataset.stop = stopId;
             alarmSet.dataset.minutes = prediction.Minutes;
             alarmSet.dataset.tripId = prediction.TripID;
+            alarmSet.classList.add('clickable-emoji')
             alarmSet.innerText = '⏰';
             
             row.append(busNum, busMinutes, alarmSet)

@@ -3,7 +3,6 @@ let userId
 
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('log').addEventListener('click', showLogIn)
-
 })
 
 function showLogIn() {
@@ -98,6 +97,93 @@ function getFavorites() {
 
 function displayFavorites(favList) {
     const mainContainer = clearAndReturnMain()
-    debugger
-    const listContainer = document.createElement('ul')
+    const listContainer = document.createElement('table')
+    listContainer.classList.add('table', 'is-hoverable')
+    const containerBody = document.createElement('tbody')
+    listContainer.appendChild(containerBody)
+
+
+    const favElements = favList.map(fav => {
+        let row = document.createElement('tr')
+
+        let stopNum = document.createElement('td');
+        let stopBox = document.createElement('div')
+        stopBox.innerText = fav.lookup
+        stopBox.classList.add('stopbox')
+
+        let stopDesc = document.createElement('div')
+        stopDesc.classList.add('bus-description')
+        stopDesc.innerText = " " + fav.description;
+        stopDesc.id = `favorite-${fav.id}`
+        stopNum.append(stopBox, stopDesc)
+
+        const editFigure = document.createElement('a')
+        editFigure.innerText = '✏️'
+        editFigure.classList.add('clickable-emoji')
+        editFigure.dataset.fav = fav.id
+        editFigure.addEventListener('click', (e) => editFav(e.target.dataset.fav))
+
+        const deleteFigure = document.createElement('a')
+        deleteFigure.innerText = '🗑️'
+        deleteFigure.classList.add('clickable-emoji')
+        deleteFigure.dataset.fav = fav.id
+        deleteFigure.addEventListener('click', (e) => deleteFavConfirm(e.target.dataset.fav))
+
+        row.append(stopNum, editFigure, deleteFigure)
+
+        return row
+    })
+
+    favElements.forEach(elem => {
+        containerBody.appendChild(elem)
+    })
+
+    mainContainer.appendChild(listContainer)
+}
+
+function editFav(favId) {
+    const editableFavDescription = document.getElementById(`favorite-${favId}`)
+    
+    const editDescriptionForm = document.createElement('form')
+    editDescriptionForm.classList.add('bus-description')
+    editDescriptionForm.addEventListener('submit', saveEdit)
+    
+    const descriptionInput = document.createElement('input')
+    descriptionInput.classList.add('input','resized-input');
+    descriptionInput.setAttribute('name', 'description');
+    descriptionInput.setAttribute('maxlength', '60')
+    descriptionInput.setAttribute('placeholder', editableFavDescription.innerText)
+    
+    
+    const descriptionSaveBtn = document.createElement('button')
+    descriptionSaveBtn.innerText = 'Save'
+    descriptionSaveBtn.classList.add('button', 'is-primary')
+    descriptionSaveBtn.type = 'submit'
+
+    const cancelEditBtn = document.createElement('button')
+    cancelEditBtn.innerText = 'Cancel'
+    cancelEditBtn.classList.add('button', 'is-warning')
+    cancelEditBtn.addEventListener('click', removeEditForm)
+    
+    editDescriptionForm.append(descriptionInput, descriptionSaveBtn, cancelEditBtn)
+    editableFavDescription.insertAdjacentElement('afterend', editDescriptionForm)
+    editableFavDescription.setAttribute('hidden', true)
+    
+    function removeEditForm() {
+        editDescriptionForm.remove()
+        editableFavDescription.removeAttribute('hidden')
+    }
+
+}
+
+
+function saveEdit(e) {
+    e.preventDefault()
+    console.log(e.target.description.value)
+}
+
+function deleteFavConfirm(favId) {
+    if (confirm("Are you sure you want to delete this favorite?")) {
+        console.log('send delete request to server for Id =', favId)
+    }
 }

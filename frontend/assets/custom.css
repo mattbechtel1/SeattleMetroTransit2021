@@ -11,3 +11,18 @@
 .bus-description {
     float: right;
 } 
+
+.resized-input {
+    width: auto
+}
+
+.clickable-emoji {
+    padding-left: 1em
+}
+
+.stopbox {
+    margin: 5px;
+    float: left;
+    font-weight: bold;
+    text-align: center;
+}
