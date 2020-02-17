@@ -1,4 +1,10 @@
 Rails.application.routes.draw do
+  get 'metro/busstops/', to: 'metro#bus_stops'
+  get 'metro/busstop/:stop_id', to: 'metro#bus_stop'
+  get 'metro/stations'
+  get 'metro/station/:station_code', to: 'metro#station'
+  get 'metro/busroutes', to: 'metro#bus_route_list'
+  get 'metro/lines'
   resources :favorites
   resources :users
   get 'login', to: 'sessions#new'

@@ -15,7 +15,7 @@ class SessionsController < ApplicationController
       end
     else
       # user not found
-      render json: { error: true, message: "Username not found." }, status: :unauthorized
+      render json: { error: true, message: "Email not found." }, status: :unauthorized
     end
   end
 

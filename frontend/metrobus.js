@@ -1,6 +1,3 @@
-const busPredictionPrefix = 'https://api.wmata.com/NextBusService.svc/json/jPredictions/?StopID='
-const busRouteListUrl = 'https://api.wmata.com/Bus.svc/json/jRoutes'
-const routeScheduleUrlPrefix = 'https://api.wmata.com/Bus.svc/json/jRouteSchedule'
 const alarmSound = new Audio('./assets/charge.wav');
 const confirmSound = new Audio('./assets/263133__pan14__tone-beep.wav');
 const lostSound = new Audio('./assets/159408__noirenex__life-lost-game-over.wav');
@@ -9,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('search-by-stop').addEventListener('click', () => popUpSearch(stopSearch));
     document.getElementById('search-by-route').addEventListener('click', function() {
         popUpSearch(routeSearch);
-        fetch(busRouteListUrl, configObj)
+        fetch('http://localhost:3000/metro/busroutes')
         .then(response => response.json())
         .then(data => getRoutes(data.Routes))
         });
@@ -51,7 +48,7 @@ function popUpSearch(searchFunction) {
 
 function stopSearch(event) {
     event.preventDefault()
-
+    
     let form = document.getElementById('search-form')
     const busStop = form.queryData.value.toString();
     let stopId;
@@ -63,7 +60,7 @@ function stopSearch(event) {
         stopId = busStop;
     }
 
-    fetch(busPredictionPrefix + stopId, configObj)
+    fetch(`http://localhost:3000/metro/busstop/${stopId}`)
     .then(response => response.json())
     .then(data => checkForBuses(data, stopId))
     .catch(error => alert(error.message))
@@ -74,32 +71,15 @@ function routeSearch(event) {
 
     let form = event.currentTarget
     let query = form.queryData.value.toString().toUpperCase();
-
+    
     if (query.length > 4 ) {
         alert('Invalid stop number');
         return;
     }
 
-    const today = new Date()
-    let year = today.getFullYear()
-    let month;
-        if (((today.getMonth() + 1).toString()).length < 1) {
-            month = '0' + (today.getMonth() + 1)
-        } else {
-            month = today.getMonth() + 1
-        }
-    let day; 
-        if (((today.getDate()).toString()).length < 1) {
-            day = '0' + today.getDate()
-        } else {
-            day = today.getDate();
-        }
+    let fullUrl = `http://localhost:3000/metro/busstops/?RouteID=${query}&IncludingVariations=true`
     
-    let queryDate = year + '-' + month + '-' + day;
-
-    let fullUrl = routeScheduleUrlPrefix + '?RouteID=' + query + '&Date=' + queryDate + 'IncludingVariations=true'
-    
-    fetch(fullUrl, configObj)
+    fetch(fullUrl)
     .then(response => response.json())
     .then(data => {
         if (!!data.Message) {
@@ -111,7 +91,7 @@ function routeSearch(event) {
     .catch(error => alert(error.message))
 }
 
-function buildHeader(stopId) {
+function buildHeader(stopId, searchCode) {
     const favoriteDiv = document.createElement('div')
     let describeText = function(stopId) {
         if (!isNaN(parseInt(stopId))) {
@@ -124,8 +104,9 @@ function buildHeader(stopId) {
     const favoriteHeart = document.createElement('a')
     favoriteHeart.classList.add('clickable-emoji')
     favoriteHeart.innerText = '💗'
-    favoriteHeart.dataset.stop = stopId
-    favoriteHeart.dataset.stopType = 'bus'
+    favoriteHeart.dataset.stop = searchCode || stopId
+    favoriteHeart.dataset.description = stopId
+    favoriteHeart.dataset.stopType = searchCode ? 'train' : 'bus'
     favoriteHeart.addEventListener('click', addFavorite)
     favoriteDiv.appendChild(favoriteHeart)
 
@@ -391,7 +372,7 @@ function setAlarm(event, stopId, tripId) {
     };
     
     let alarm = setInterval(function () {
-        fetch(busPredictionPrefix + stopId, configObj)
+        fetch(`http://localhost:3000/busstop/${stopId}`)
         .then(response => response.json())
         .then(data => { checkAlarm(data.Predictions)
             getBuses(data, stopId)

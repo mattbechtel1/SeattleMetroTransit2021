@@ -103,13 +103,13 @@ function displayFavorites(favList) {
     const containerBody = document.createElement('tbody')
     listContainer.appendChild(containerBody)
 
-
     const favElements = favList.map(fav => {
         let row = document.createElement('tr')
 
         let stopNum = document.createElement('td');
-        let stopBox = document.createElement('div')
-        stopBox.innerText = fav.lookup
+        // stopNum.dataset.favStopId = fav.lookup
+        let stopBox = document.createElement('a')
+        stopBox.innerText = fav.permanent_desc
         stopBox.classList.add('stopbox')
 
         let stopDesc = document.createElement('div')
@@ -118,6 +118,22 @@ function displayFavorites(favList) {
         stopDesc.id = `favorite-${fav.id}`
         stopNum.append(stopBox, stopDesc)
 
+        if (fav.transit_type === 'bus') {
+            stopNum.addEventListener('click', (e) => {
+                fetch('http://localhost:3000/metro/busstop/' + fav.lookup)
+                .then(response => response.json())
+                .then(data => checkForBuses(data, fav.lookup))
+            })
+        } else {
+            stopNum.addEventListener('click', (e) => {
+                fetch('http://localhost:3000/metro/station/' + fav.lookup)
+                .then(response => response.json())
+                .then(data => {
+                    displayTrains(data.Trains, fav.description)
+                })
+            })
+        }
+            
         const editFigure = document.createElement('a')
         editFigure.innerText = '✏️'
         editFigure.classList.add('clickable-emoji')
@@ -148,6 +164,8 @@ function editFav(favId) {
     const editDescriptionForm = document.createElement('form')
     editDescriptionForm.classList.add('bus-description')
     editDescriptionForm.addEventListener('submit', saveEdit)
+    editDescriptionForm.addEventListener('click', (e) => e.stopPropagation())
+    editDescriptionForm.dataset.favId = favId
     
     const descriptionInput = document.createElement('input')
     descriptionInput.classList.add('input','resized-input');
@@ -167,24 +185,53 @@ function editFav(favId) {
     cancelEditBtn.addEventListener('click', removeEditForm)
     
     editDescriptionForm.append(descriptionInput, descriptionSaveBtn, cancelEditBtn)
-    editableFavDescription.insertAdjacentElement('afterend', editDescriptionForm)
     editableFavDescription.setAttribute('hidden', true)
     
+    editableFavDescription.insertAdjacentElement('afterend', editDescriptionForm)
+
     function removeEditForm() {
-        editDescriptionForm.remove()
+        formContainer.remove()
         editableFavDescription.removeAttribute('hidden')
     }
-
 }
-
 
 function saveEdit(e) {
     e.preventDefault()
-    console.log(e.target.description.value)
+    fetch(`${favoriteUrl}/${e.target.dataset.favId}`, hostedObj('PATCH', {
+        description: e.target.description.value
+    }))
+    .then(response => response.json())
+    .then(updatedFav => {
+        if (updatedFav.error) {
+            alert(updatedFav.message)
+        } else {
+            updateFavInState(updatedFav)
+        }
+    })
 }
 
 function deleteFavConfirm(favId) {
     if (confirm("Are you sure you want to delete this favorite?")) {
-        console.log('send delete request to server for Id =', favId)
+        fetch(`${favoriteUrl}/${favId}`, hostedObj('DELETE', null))
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error)
+            } else {
+                deleteFavFromState(data.id)
+            }
+        })
     }
+}
+
+function deleteFavFromState(favId) {
+    const updatedFavs = userHeldInState.favorites.filter(fav => fav.id !== favId)
+    userHeldInState.favorites = updatedFavs
+    displayFavorites(updatedFavs)
+}
+
+function updateFavInState(replacementFav) {
+    const oldFavIdx = userHeldInState.favorites.findIndex(fav => fav.id === replacementFav.id)
+    userHeldInState.favorites = [...userHeldInState.favorites.slice(0, oldFavIdx), replacementFav, ...userHeldInState.favorites.slice(oldFavIdx + 1)]
+    displayFavorites(userHeldInState.favorites)
 }

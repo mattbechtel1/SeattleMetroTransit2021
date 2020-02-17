@@ -1,18 +1,13 @@
-const lineListUrl = 'https://api.wmata.com/Rail.svc/json/jLines'
-const stationListUrlPrefix = 'https://api.wmata.com/Rail.svc/json/jStations'
-const stationPredictionsUrlPrefix = 'https://api.wmata.com/StationPrediction.svc/json/GetPrediction/'
-
 const colors = {'OR': 'orange', 'BL': 'blue', 'RD': 'red', 'SV': 'silver', 'GR': 'green', 'YL': 'yellow'}
-
 
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('search-by-station').addEventListener('click', function() {
-        fetch(stationListUrlPrefix, configObj)
+        fetch('http://localhost:3000/metro/stations')
         .then(response => response.json())
         .then(data => listStations(data.Stations))
     });
     document.getElementById('search-by-line').addEventListener('click', function() {
-        fetch(lineListUrl, configObj)
+        fetch('http://localhost:3000/metro/lines')
         .then(response => response.json())
         .then(data => displayLineSearch(data.Lines))
     });
@@ -40,10 +35,10 @@ function listStations(stations) {
     form.addEventListener('submit', function(e) {
         e.preventDefault()
         
-        fetch(stationPredictionsUrlPrefix + e.target.opt.value.split(',')[0], configObj)
+        fetch(`http://localhost:3000/metro/station/${e.target.opt.value.split(',')[0]}`)
         .then(response => response.json())
         .then(data => {
-            displayTrains(data.Trains, e.target.opt.value.split(',')[1])
+            displayTrains(data.Trains, e.target.opt.value.split(',')[1], e.target.opt.value.split(',')[0])
         })
     })
 
@@ -75,7 +70,7 @@ function displayLineSearch(lines) {
 function lineSearch(event) {
     event.preventDefault()
 
-    fetch(stationListUrlPrefix + '?Linecode=' + event.target.opt.value, configObj)
+    fetch('http://localhost:3000/metro/stations?Linecode=' + event.target.opt.value)
     .then(response => response.json())
     .then(data => listStations(data.Stations))
 }
@@ -122,14 +117,14 @@ function buildDropDownForm(optionsList, forEachCallback, saveText) {
     return form
 }
 
-function displayTrains(trains, stationName) {
+function displayTrains(trains, stationName, stationCode) {
     const mainContainer = clearAndReturnMain()
     
     if (trains.length < 1) {
         mainContainer.innerHTML = "No trains found."
     } else {
         
-        const heading = buildHeader(stationName)
+        const heading = buildHeader(stationName, stationCode)
 
         const table = document.createElement('table')
         table.classList.add('table', 'is-hoverable')

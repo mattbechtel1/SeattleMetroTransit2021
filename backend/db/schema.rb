@@ -10,19 +10,19 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_01_26_014219) do
+ActiveRecord::Schema.define(version: 2020_02_17_205652) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
   create_table "favorites", force: :cascade do |t|
-    t.string "url"
     t.string "description"
     t.bigint "user_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.string "transit_type"
     t.string "lookup"
+    t.string "permanent_desc"
     t.index ["user_id", "lookup"], name: "index_favorites_on_user_id_and_lookup", unique: true
     t.index ["user_id"], name: "index_favorites_on_user_id"
   end
