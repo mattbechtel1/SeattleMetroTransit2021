@@ -12,6 +12,6 @@ class UserSerializer
             },
             only: [:email, :id]
         }
-        @user.to_json(format)
+        @user.as_json(format)
     end
 end

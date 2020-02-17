@@ -4,8 +4,19 @@ class SessionsController < ApplicationController
 
   def create
     user = User.find_by(email: params[:email])
-    return head(:forbidden) unless user.authenticate(params[:password])
-    render json: UserSerializer.new(user).to_serialized_json
+
+    if user
+      if user.authenticate(params[:password])
+          # user found and password authenticated
+          render json: UserSerializer.new(user).to_serialized_json, status: :accepted
+      else
+          # user found, but bad password
+          render json: { error: true, message: "Password does not match. Please try again." }, status: :unauthorized
+      end
+    else
+      # user not found
+      render json: { error: true, message: "Username not found." }, status: :unauthorized
+    end
   end
 
   def destroy

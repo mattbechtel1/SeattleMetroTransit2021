@@ -13,7 +13,9 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => getRoutes(data.Routes))
         });
-    document.getElementById('favorites').addEventListener('click', getFavorites)
+    const favLink = document.getElementById('favorites')
+    favLink.style.display = 'none'
+    favLink.addEventListener('click', () => displayFavorites(userHeldInState.favorites))
 })
 
 function popUpSearch(searchFunction) {

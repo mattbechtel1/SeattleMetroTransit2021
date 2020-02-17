@@ -1,5 +1,6 @@
 const sessionURL = 'http://localhost:3000/login'
 let userId
+let userHeldInState
 
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('log').addEventListener('click', showLogIn)
@@ -77,22 +78,22 @@ function startSession(event) {
     
     fetch(sessionURL, hostedObj('POST', formObj.objectify))
     .then(response => response.json())
-    .then(function(user) {
-        userId = user.id
-        greetUser(user)
+    .then(user => {
+        if (user.error) {
+            alert(user.message)
+        } else {
+            userHeldInState = user
+            userId = user.id
+            const favLink = document.getElementById('favorites')
+            favLink.style.display = 'flex'
+            greetUser(user)
+        }
     })
 }
 
 function greetUser(user) {
     document.getElementById('notification-block').innerText = "Welcome " + user.email
     clearAndReturnMain()
-} 
-
-function getFavorites() {
-    fetch(`http://localhost:3000/users/${userId}`)
-    .then(response => response.json())
-    .then(data => data.favorites)
-    .then(displayFavorites)
 }
 
 function displayFavorites(favList) {

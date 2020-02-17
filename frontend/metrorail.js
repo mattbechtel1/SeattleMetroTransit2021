@@ -35,7 +35,7 @@ function listStations(stations) {
         option.innerText = station.Name
 
         return option
-    })
+    }, 'Go to Station')
 
     form.addEventListener('submit', function(e) {
         e.preventDefault()
@@ -65,7 +65,7 @@ function displayLineSearch(lines) {
         option.innerText = line.DisplayName;
 
         return option
-    })
+    }, 'Go to Line')
 
     metroLineForm.addEventListener('submit', function(e) {lineSearch(e)})
 
@@ -80,7 +80,7 @@ function lineSearch(event) {
     .then(data => listStations(data.Stations))
 }
 
-function buildDropDownForm(optionsList, forEachCallback) {
+function buildDropDownForm(optionsList, forEachCallback, saveText) {
     const form = document.createElement('form');
     form.id = 'metroline-filter-form'
 
@@ -112,7 +112,7 @@ function buildDropDownForm(optionsList, forEachCallback) {
     btnDiv.classList.add('control')
 
     let btn = document.createElement('button');
-    btn.innerText = 'Go To Line'
+    btn.innerText = saveText
     btn.type = 'submit'
     btn.classList.add('button', 'is-primary')
     btnDiv.appendChild(btn)
