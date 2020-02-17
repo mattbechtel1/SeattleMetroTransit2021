@@ -173,11 +173,7 @@ function editFav(favId) {
     descriptionInput.setAttribute('maxlength', '60')
     descriptionInput.setAttribute('placeholder', editableFavDescription.innerText)
     
-    
-    const descriptionSaveBtn = document.createElement('button')
-    descriptionSaveBtn.innerText = 'Save'
-    descriptionSaveBtn.classList.add('button', 'is-primary')
-    descriptionSaveBtn.type = 'submit'
+    const descriptionSaveBtn = createSubmit('Save')
 
     const cancelEditBtn = document.createElement('button')
     cancelEditBtn.innerText = 'Cancel'

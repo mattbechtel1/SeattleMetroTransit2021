@@ -106,10 +106,7 @@ function buildDropDownForm(optionsList, forEachCallback, saveText) {
     const btnDiv = document.createElement('div');
     btnDiv.classList.add('control')
 
-    let btn = document.createElement('button');
-    btn.innerText = saveText
-    btn.type = 'submit'
-    btn.classList.add('button', 'is-primary')
+    let btn = createSubmit(saveText)
     btnDiv.appendChild(btn)
 
     outerDiv.append(innerDiv1, btnDiv)

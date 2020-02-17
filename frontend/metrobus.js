@@ -195,10 +195,7 @@ function getRoutes(routeList) {
     const btnDiv = document.createElement('div');
     btnDiv.classList.add('control')
 
-    secondBtn = document.createElement('button');
-    secondBtn.innerText = 'Go To Route'
-    secondBtn.type = 'submit'
-    secondBtn.classList.add('button', 'is-primary')
+    const secondBtn = createSubmit('Go To Route')
     btnDiv.appendChild(secondBtn)
 
     routesListOuterDiv.append(routesListInnerDiv1, btnDiv)
@@ -246,10 +243,7 @@ function displaySchedule(schedule) {
     const directionBtnDiv = document.createElement('div')
     directionBtnDiv.classList.add('control')
     
-    let directionSubmitBtn = document.createElement('button')
-    directionSubmitBtn.classList.add('button', 'is-primary')
-    directionSubmitBtn.innerText = 'Submit'
-    directionSubmitBtn.type = 'submit'
+    const directionSubmitBtn = createSubmit('Submit')
     directionBtnDiv.appendChild(directionSubmitBtn)
 
     innerDirectionDiv2.append(dropdownSelect);
@@ -316,10 +310,7 @@ function askAlarm(event) {
     internalInput.setAttribute('name', 'alarm');
     internalInput.setAttribute('min', '1');
     internalInput.setAttribute('max', event.target.dataset.minutes)
-    let internalSubmit = document.createElement('button');
-    internalSubmit.classList.add('button', 'is-primary')
-    internalSubmit.type = 'submit';
-    internalSubmit.innerText = "Set Alarm"
+    let internalSubmit = createSubmit('Set Alarm')
     internalForm.addEventListener('submit', function(e) {setAlarm(e, stopId, tripId)})
     let internalClose = document.createElement('button');
     internalClose.classList.add('button', 'is-primary')
