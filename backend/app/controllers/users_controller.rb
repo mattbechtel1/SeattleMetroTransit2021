@@ -1,13 +1,13 @@
 class UsersController < ApplicationController
     def create
         user = User.create(user_params)
-        render json: user
+        
+        if user.valid?
+            render json: UserSerializer.new(user).to_serialized_json
+        else 
+            render json: {error: true, message: "Something went wrong."}
+        end
     end
-
-    # def show
-    #     user = User.find(params[:id])
-    #     render json: UserSerializer.new(user).to_serialized_json
-    # end
     
     private
      

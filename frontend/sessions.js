@@ -6,16 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('log').addEventListener('click', showLogIn)
 })
 
-function showLogIn() {
-    const mainContainer = clearAndReturnMain()
-
-    const form = document.createElement('form');
-    form.id = 'login-form'
-
-    const outerDiv = document.createElement('div');
-    outerDiv.classList.add('field')
-    form.appendChild(outerDiv)
-
+const userInputs = () => {
     const innerDiv1 = document.createElement('div');
     innerDiv1.classList.add('control')
 
@@ -35,20 +26,67 @@ function showLogIn() {
     passwordInput.setAttribute('placeholder', "Enter password")
     innerDiv2.appendChild(passwordInput)
 
-
-    const innerDiv3 = document.createElement('div')
-    innerDiv3.classList.add('control')
-
-    const submitBtn = createSubmit('Log In')
-    innerDiv3.appendChild(submitBtn)
-
-    outerDiv.append(innerDiv1, innerDiv2, innerDiv3)
-    form.addEventListener('submit', startSession)
-    mainContainer.appendChild(form)
+    return [innerDiv1, innerDiv2]
 
 }
 
-let createSubmit = function(btnText) {
+function showLogIn() {
+    const mainContainer = clearAndReturnMain()
+
+    const form = document.createElement('form');
+    form.id = 'login-form'
+
+    const outerDiv = document.createElement('div');
+    outerDiv.classList.add('field')
+    form.appendChild(outerDiv)
+
+    const buttonsDiv = document.createElement('div')
+    buttonsDiv.classList.add('control', 'buttons')
+
+    const submitBtn = createSubmit('Log In')
+    const newUserBtn = document.createElement('Button')
+    newUserBtn.classList.add('button', 'is-primary')
+    newUserBtn.innerText = 'Sign Up'
+    newUserBtn.type = 'button'
+    newUserBtn.addEventListener('click', newUserForm)
+    buttonsDiv.append(submitBtn, newUserBtn)
+
+    outerDiv.append(...userInputs(), buttonsDiv)
+    form.addEventListener('submit', startSession)
+    mainContainer.appendChild(form)
+}
+
+function newUserForm() {
+    const mainContainer = clearAndReturnMain()
+
+    const form = document.createElement('form')
+    form.id = 'sign-up-form'
+
+    const outerDiv = document.createElement('div')
+    outerDiv.classList.add('field')
+    form.appendChild(outerDiv)
+
+    const passwordConfirmDiv = document.createElement('div')
+    passwordConfirmDiv.classList.add('control')
+    passwordConfirmInput = document.createElement('input')
+    passwordConfirmInput.classList.add('input')
+    passwordConfirmInput.type = 'password'
+    passwordConfirmInput.setAttribute('name', 'securepassword')
+    passwordConfirmInput.setAttribute('placeholder', "Confirm password")
+    passwordConfirmDiv.appendChild(passwordConfirmInput)
+
+    const submitBtn = createSubmit('Sign Up')
+    const buttonDiv = document.createElement('div')
+    buttonDiv.classList.add('control')
+    buttonDiv.appendChild(submitBtn)
+
+    outerDiv.append(...userInputs(), passwordConfirmDiv, buttonDiv)
+
+    form.addEventListener('submit', createNewUser)
+    mainContainer.appendChild(form)
+}
+
+const createSubmit = function(btnText) {
     const submitBtn = document.createElement('button');
     submitBtn.classList.add('button', 'is-primary')
     submitBtn.innerText = btnText;
@@ -230,4 +268,21 @@ function updateFavInState(replacementFav) {
     const oldFavIdx = userHeldInState.favorites.findIndex(fav => fav.id === replacementFav.id)
     userHeldInState.favorites = [...userHeldInState.favorites.slice(0, oldFavIdx), replacementFav, ...userHeldInState.favorites.slice(oldFavIdx + 1)]
     displayFavorites(userHeldInState.favorites)
+}
+
+function createNewUser(e) {
+    e.preventDefault()
+
+    let formObj = new UserFormObject(e.target.email.value, e.target.password.value)
+    let totalObj = {...formObj.objectify, password_confirmation: e.target.securepassword.value}
+    
+    fetch('http://localhost:3000/users', hostedObj('POST', {user: totalObj}))
+    .then(response => response.json())
+    .then(user => {
+        userHeldInState = user
+        userId = user.id
+        const favLink = document.getElementById('favorites')
+        favLink.style.display = 'flex'
+        greetUser(user)
+    })
 }
