@@ -1,4 +1,4 @@
-const baseUrl = 'http://dc-metrobus-2020-api.herokuapp.com'
+const baseUrl = 'https://dc-metrobus-2020-api.herokuapp.com'
 const favoriteUrl = `${baseUrl}/favorites`
 
 const hostedObj = function(requestType, formResponseObj) {
