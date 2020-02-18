@@ -1,6 +1,6 @@
 const alarmSound = new Audio('./assets/charge.wav');
 const confirmSound = new Audio('./assets/263133__pan14__tone-beep.wav');
-const lostSound = new Audio('./assets/159408__noirenex__life-lost-game-over.wav');
+const lostSound = new Audio('./assets/259172__xtrgamr__uhoh.wav');
 
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('search-by-stop').addEventListener('click', () => popUpSearch(stopSearch));
@@ -271,7 +271,7 @@ function listRouteStops(event, schedule) {
         link.innerText = "Stop Id: " + stopTime.StopID + " at " + stopTime.StopName
         li.appendChild(link)
         li.addEventListener('click', function() {
-            fetch(busPredictionPrefix + stopTime.StopID, configObj)
+            fetch('http://localhost:3000/metro/busstop/' + stopTime.StopID)
             .then(response => response.json())
             .then(data => checkForBuses(data, stopTime.StopID)) 
             })
@@ -332,16 +332,7 @@ function setAlarm(event, stopId, tripId) {
     const alarmSettingMins = event.target.alarm.value;
     
     //notification
-    const notificationBlock = document.getElementById('notification-block');
-    notificationBlock.classList.add('notification', 'is-success');
-    let closeBtn = document.createElement('button')
-    closeBtn.classList.add('delete')
-    closeMarker = document.createElement('i')
-    closeMarker.classList.add('fas', 'fa-times')
-    closeBtn.appendChild(closeMarker)
-    notificationBlock.appendChild(closeBtn);
-    confirmSound.play()
-    notificationBlock.innerText = `An alarm has been set for bus #${tripId} at stop #${stopId} with ${alarmSettingMins} minutes' warning.`
+    confirmNotification(`An alarm has been set for bus #${tripId} at stop #${stopId} with ${alarmSettingMins} minutes' warning.`)
     
     let checkAlarm = function(busPredictions) {
         let myBus = busPredictions.find(bus => bus.TripID === tripId)
@@ -363,10 +354,43 @@ function setAlarm(event, stopId, tripId) {
     };
     
     let alarm = setInterval(function () {
-        fetch(`http://localhost:3000/busstop/${stopId}`)
+        fetch(`http://localhost:3000/metro/busstop/${stopId}`)
         .then(response => response.json())
         .then(data => { checkAlarm(data.Predictions)
             getBuses(data, stopId)
         })
     }, 30000)
+}
+
+function buildCloseBtn() {
+    let closeBtn = document.createElement('button')
+    closeBtn.classList.add('delete')
+    closeMarker = document.createElement('i')
+    closeMarker.classList.add('fas', 'fa-times')
+    closeBtn.addEventListener('click', clearNotificationBlock)
+    closeBtn.appendChild(closeMarker)
+    return closeBtn
+}
+
+function confirmNotification(message) {
+    const notificationBlock = clearAndReturnNotification()
+    confirmSound.play()
+    notificationBlock.classList.add('notification', 'is-success');
+    notificationBlock.innerText = message
+    notificationBlock.appendChild(buildCloseBtn())
+}
+
+function errorNotification(message) {
+    const notificationBlock = clearAndReturnNotification()
+    notificationBlock.classList.add('notification', 'is-danger');
+    notificationBlock.innerText = message
+    notificationBlock.appendChild(buildCloseBtn())
+    lostSound.play()
+}
+
+function clearAndReturnNotification() {
+    const notificationBlock = document.getElementById('notification-block');
+    notificationBlock.classList.remove('notification', 'is-danger', 'is-success')
+    notificationBlock.innerHTML = ''
+    return notificationBlock
 }

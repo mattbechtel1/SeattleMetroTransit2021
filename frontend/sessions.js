@@ -145,7 +145,6 @@ function displayFavorites(favList) {
         let row = document.createElement('tr')
 
         let stopNum = document.createElement('td');
-        // stopNum.dataset.favStopId = fav.lookup
         let stopBox = document.createElement('a')
         stopBox.innerText = fav.permanent_desc
         stopBox.classList.add('stopbox')
@@ -240,6 +239,7 @@ function saveEdit(e) {
             alert(updatedFav.message)
         } else {
             updateFavInState(updatedFav)
+            confirmNotification(`${updatedFav.description} has been saved into your favorites.`)
         }
     })
 }
@@ -279,10 +279,15 @@ function createNewUser(e) {
     fetch('http://localhost:3000/users', hostedObj('POST', {user: totalObj}))
     .then(response => response.json())
     .then(user => {
-        userHeldInState = user
-        userId = user.id
-        const favLink = document.getElementById('favorites')
-        favLink.style.display = 'flex'
-        greetUser(user)
+        if (!user.error) {
+            userHeldInState = user
+            userId = user.id
+            const favLink = document.getElementById('favorites')
+            favLink.style.display = 'flex'
+            greetUser(user)
+        } else {
+            alert(user.message)
+            document.getElementById('sign-up-form').reset()
+        }
     })
 }

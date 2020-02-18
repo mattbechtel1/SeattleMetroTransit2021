@@ -5,7 +5,7 @@ class UsersController < ApplicationController
         if user.valid?
             render json: UserSerializer.new(user).to_serialized_json
         else 
-            render json: {error: true, message: "Something went wrong."}
+            render json: {error: true, message: "Invalid username or password. Please try again."}
         end
     end
     
