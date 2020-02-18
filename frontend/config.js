@@ -1,4 +1,5 @@
-const favoriteUrl = 'http://localhost:3000/favorites'
+const baseUrl = 'http://localhost:3000'
+const favoriteUrl = `${baseUrl}/favorites`
 
 const hostedObj = function(requestType, formResponseObj) {
   return {

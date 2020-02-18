@@ -2,12 +2,12 @@ const colors = {'OR': 'orange', 'BL': 'blue', 'RD': 'red', 'SV': 'silver', 'GR':
 
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('search-by-station').addEventListener('click', function() {
-        fetch('http://localhost:3000/metro/stations')
+        fetch(`${baseUrl}/metro/stations`)
         .then(response => response.json())
         .then(data => listStations(data.Stations))
     });
     document.getElementById('search-by-line').addEventListener('click', function() {
-        fetch('http://localhost:3000/metro/lines')
+        fetch(`${baseUrl}/metro/lines`)
         .then(response => response.json())
         .then(data => displayLineSearch(data.Lines))
     });
@@ -35,7 +35,7 @@ function listStations(stations) {
     form.addEventListener('submit', function(e) {
         e.preventDefault()
         
-        fetch(`http://localhost:3000/metro/station/${e.target.opt.value.split(',')[0]}`)
+        fetch(`${baseUrl}/metro/station/${e.target.opt.value.split(',')[0]}`)
         .then(response => response.json())
         .then(data => {
             displayTrains(data.Trains, e.target.opt.value.split(',')[1], e.target.opt.value.split(',')[0])
@@ -70,7 +70,7 @@ function displayLineSearch(lines) {
 function lineSearch(event) {
     event.preventDefault()
 
-    fetch('http://localhost:3000/metro/stations?Linecode=' + event.target.opt.value)
+    fetch(`${baseUrl}/metro/stations?Linecode=${event.target.opt.value}`)
     .then(response => response.json())
     .then(data => listStations(data.Stations))
 }

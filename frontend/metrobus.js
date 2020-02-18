@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('search-by-stop').addEventListener('click', () => popUpSearch(stopSearch));
     document.getElementById('search-by-route').addEventListener('click', function() {
         popUpSearch(routeSearch);
-        fetch('http://localhost:3000/metro/busroutes')
+        fetch(`${baseUrl}/metro/busroutes`)
         .then(response => response.json())
         .then(data => getRoutes(data.Routes))
         });
@@ -60,7 +60,7 @@ function stopSearch(event) {
         stopId = busStop;
     }
 
-    fetch(`http://localhost:3000/metro/busstop/${stopId}`)
+    fetch(`${baseUrl}/metro/busstop/${stopId}`)
     .then(response => response.json())
     .then(data => checkForBuses(data, stopId))
     .catch(error => errorNotification(error.message))
@@ -77,7 +77,7 @@ function routeSearch(event) {
         return;
     }
 
-    let fullUrl = `http://localhost:3000/metro/busstops/?RouteID=${query}&IncludingVariations=true`
+    let fullUrl = `${baseUrl}/metro/busstops/?RouteID=${query}&IncludingVariations=true`
     
     fetch(fullUrl)
     .then(response => response.json())
@@ -271,7 +271,7 @@ function listRouteStops(event, schedule) {
         link.innerText = "Stop Id: " + stopTime.StopID + " at " + stopTime.StopName
         li.appendChild(link)
         li.addEventListener('click', function() {
-            fetch('http://localhost:3000/metro/busstop/' + stopTime.StopID)
+            fetch(`${baseUrl}/metro/busstop/${stopTime.StopID}`)
             .then(response => response.json())
             .then(data => checkForBuses(data, stopTime.StopID)) 
             })
@@ -354,7 +354,7 @@ function setAlarm(event, stopId, tripId) {
     };
     
     let alarm = setInterval(function () {
-        fetch(`http://localhost:3000/metro/busstop/${stopId}`)
+        fetch(`${baseUrl}/metro/busstop/${stopId}`)
         .then(response => response.json())
         .then(data => { checkAlarm(data.Predictions)
             getBuses(data, stopId)

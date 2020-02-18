@@ -1,4 +1,4 @@
-const sessionURL = 'http://localhost:3000/login'
+const sessionURL = `${baseUrl}/login`
 let userId
 let userHeldInState
 
@@ -157,13 +157,13 @@ function displayFavorites(favList) {
 
         if (fav.transit_type === 'bus') {
             stopNum.addEventListener('click', (e) => {
-                fetch('http://localhost:3000/metro/busstop/' + fav.lookup)
+                fetch(`${baseUrl}/metro/busstop/${fav.lookup}`)
                 .then(response => response.json())
                 .then(data => checkForBuses(data, fav.lookup))
             })
         } else {
             stopNum.addEventListener('click', (e) => {
-                fetch('http://localhost:3000/metro/station/' + fav.lookup)
+                fetch(`${baseUrl}/metro/station/${fav.lookup}`)
                 .then(response => response.json())
                 .then(data => {
                     displayTrains(data.Trains, fav.description)
@@ -276,7 +276,7 @@ function createNewUser(e) {
     let formObj = new UserFormObject(e.target.email.value, e.target.password.value)
     let totalObj = {...formObj.objectify, password_confirmation: e.target.securepassword.value}
     
-    fetch('http://localhost:3000/users', hostedObj('POST', {user: totalObj}))
+    fetch(`${baseUrl}/users`, hostedObj('POST', {user: totalObj}))
     .then(response => response.json())
     .then(user => {
         if (!user.error) {
