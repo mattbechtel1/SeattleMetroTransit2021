@@ -118,7 +118,7 @@ function startSession(event) {
     .then(response => response.json())
     .then(user => {
         if (user.error) {
-            alert(user.message)
+            errorNotification(user.message)
         } else {
             userHeldInState = user
             userId = user.id
@@ -236,7 +236,7 @@ function saveEdit(e) {
     .then(response => response.json())
     .then(updatedFav => {
         if (updatedFav.error) {
-            alert(updatedFav.message)
+            errorNotification(updatedFav.message)
         } else {
             updateFavInState(updatedFav)
             confirmNotification(`${updatedFav.description} has been saved into your favorites.`)
@@ -250,7 +250,7 @@ function deleteFavConfirm(favId) {
         .then(response => response.json())
         .then(data => {
             if (data.error) {
-                alert(data.error)
+                errorNotification(data.error)
             } else {
                 deleteFavFromState(data.id)
             }
@@ -286,7 +286,7 @@ function createNewUser(e) {
             favLink.style.display = 'flex'
             greetUser(user)
         } else {
-            alert(user.message)
+            errorNotification(user.message)
             document.getElementById('sign-up-form').reset()
         }
     })

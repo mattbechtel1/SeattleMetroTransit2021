@@ -54,8 +54,8 @@ function stopSearch(event) {
     let stopId;
 
     if (busStop.length !== 7 ) {
-        alert('Invalid stop number');
-        return;
+        errorNotification('Invalid stop number')
+        return
     } else {
         stopId = busStop;
     }
@@ -63,7 +63,7 @@ function stopSearch(event) {
     fetch(`http://localhost:3000/metro/busstop/${stopId}`)
     .then(response => response.json())
     .then(data => checkForBuses(data, stopId))
-    .catch(error => alert(error.message))
+    .catch(error => errorNotification(error.message))
 }
 
 function routeSearch(event) {
@@ -73,7 +73,7 @@ function routeSearch(event) {
     let query = form.queryData.value.toString().toUpperCase();
     
     if (query.length > 4 ) {
-        alert('Invalid stop number');
+        errorNotification('Invalid stop number');
         return;
     }
 
@@ -83,12 +83,12 @@ function routeSearch(event) {
     .then(response => response.json())
     .then(data => {
         if (!!data.Message) {
-            alert(data.Message)
+            errorNotification(data.Message)
             return;
         } else {
         displaySchedule(data) }
     })
-    .catch(error => alert(error.message))
+    .catch(error => errorNotification(error.message))
 }
 
 function buildHeader(stopId, searchCode) {
@@ -284,7 +284,7 @@ function listRouteStops(event, schedule) {
 
 function checkForBuses(data, stopId) {
     if (!!data.Message) {
-        alert(data.Message)
+        errorNotification(data.Message)
     } else {
         getBuses(data, stopId)
     }
@@ -348,7 +348,7 @@ function setAlarm(event, stopId, tripId) {
 
         if (!myBus) {
             lostSound.play()
-            alert("We're sorry. Your selected bus is no longer providing prediction data.")
+            errorNotification("We're sorry. Your selected bus is no longer providing prediction data.")
             notificationBlock.innerHTML = ""
         }
     };
