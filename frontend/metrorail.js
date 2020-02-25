@@ -2,14 +2,28 @@ const colors = {'OR': 'orange', 'BL': 'blue', 'RD': 'red', 'SV': 'silver', 'GR':
 
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('search-by-station').addEventListener('click', function() {
+        
+        loaderNotification("Finding stations...")
+
         fetch(`${baseUrl}/metro/stations`)
         .then(response => response.json())
-        .then(data => listStations(data.Stations))
+        .then(data => {
+            listStations(data.Stations)
+            clearAndReturnNotification()
+        })
+        .catch(displayError)
     });
     document.getElementById('search-by-line').addEventListener('click', function() {
+        
+        loaderNotification('Finding metrolines...')
+
         fetch(`${baseUrl}/metro/lines`)
         .then(response => response.json())
-        .then(data => displayLineSearch(data.Lines))
+        .then(data => {
+            clearAndReturnNotification()
+            displayLineSearch(data.Lines)
+        })
+        .catch(displayError)
     });
 })
 
@@ -34,12 +48,16 @@ function listStations(stations) {
 
     form.addEventListener('submit', function(e) {
         e.preventDefault()
+
+        loaderNotification(`Finding the train schedule for ${e.target.opt.value.split(',')[1]}`)
         
         fetch(`${baseUrl}/metro/station/${e.target.opt.value.split(',')[0]}`)
         .then(response => response.json())
         .then(data => {
             displayTrains(data.Trains, e.target.opt.value.split(',')[1], e.target.opt.value.split(',')[0])
+            clearAndReturnNotification()
         })
+        .catch(displayError)
     })
 
     mainContainer.appendChild(form)
@@ -70,9 +88,15 @@ function displayLineSearch(lines) {
 function lineSearch(event) {
     event.preventDefault()
 
+    loaderNotification(`Finding stations on the ${colors[event.target.opt.value]} line...`)
+
     fetch(`${baseUrl}/metro/stations?Linecode=${event.target.opt.value}`)
     .then(response => response.json())
-    .then(data => listStations(data.Stations))
+    .then(data => {
+        listStations(data.Stations)
+        clearAndReturnNotification()
+    })
+    .catch(displayError)
 }
 
 function buildDropDownForm(optionsList, forEachCallback, saveText) {

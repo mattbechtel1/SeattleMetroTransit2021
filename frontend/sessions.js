@@ -114,11 +114,13 @@ function startSession(event) {
 
     let formObj = new UserFormObject(event.target.email.value, event.target.password.value)
     
+    loaderNotification('Logging you in...')
+
     fetch(sessionURL, hostedObj('POST', formObj.objectify))
     .then(response => response.json())
     .then(user => {
         if (user.error) {
-            errorNotification(user.message)
+            displayError(user)
         } else {
             userHeldInState = user
             userId = user.id
@@ -157,17 +159,28 @@ function displayFavorites(favList) {
 
         if (fav.transit_type === 'bus') {
             stopNum.addEventListener('click', (e) => {
+                loaderNotification(`Getting the schedule for ${fav.description}`)
+
                 fetch(`${baseUrl}/metro/busstop/${fav.lookup}`)
                 .then(response => response.json())
-                .then(data => checkForBuses(data, fav.lookup))
+                .then(data => {
+                    clearAndReturnNotification()
+                    checkForBuses(data, fav.lookup)
+                })
+                .catch(displayError)
             })
         } else {
             stopNum.addEventListener('click', (e) => {
+
+                loaderNotification(`Getting the schedule for ${fav.description}`)
+
                 fetch(`${baseUrl}/metro/station/${fav.lookup}`)
                 .then(response => response.json())
                 .then(data => {
+                    clearAndReturnNotification()
                     displayTrains(data.Trains, fav.description)
                 })
+                .catch(displayError)
             })
         }
             
@@ -230,6 +243,9 @@ function editFav(favId) {
 
 function saveEdit(e) {
     e.preventDefault()
+
+    loaderNotification("Saving...")
+
     fetch(`${favoriteUrl}/${e.target.dataset.favId}`, hostedObj('PATCH', {
         description: e.target.description.value
     }))
@@ -242,16 +258,21 @@ function saveEdit(e) {
             confirmNotification(`${updatedFav.description} has been saved into your favorites.`)
         }
     })
+    .catch(displayError)
 }
 
 function deleteFavConfirm(favId) {
     if (confirm("Are you sure you want to delete this favorite?")) {
+
+        loaderNotification('Deleting...')
+
         fetch(`${favoriteUrl}/${favId}`, hostedObj('DELETE', null))
         .then(response => response.json())
         .then(data => {
             if (data.error) {
-                errorNotification(data.error)
+                displayError(data)
             } else {
+                confirmNotification("Successfully removed from favorites")
                 deleteFavFromState(data.id)
             }
         })
@@ -275,6 +296,8 @@ function createNewUser(e) {
 
     let formObj = new UserFormObject(e.target.email.value, e.target.password.value)
     let totalObj = {...formObj.objectify, password_confirmation: e.target.securepassword.value}
+
+    loaderNotification("Validating your new account...")
     
     fetch(`${baseUrl}/users`, hostedObj('POST', {user: totalObj}))
     .then(response => response.json())
@@ -286,7 +309,7 @@ function createNewUser(e) {
             favLink.style.display = 'flex'
             greetUser(user)
         } else {
-            errorNotification(user.message)
+            displayError(user)
             document.getElementById('sign-up-form').reset()
         }
     })
