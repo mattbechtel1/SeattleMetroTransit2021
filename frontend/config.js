@@ -2,8 +2,8 @@
 const baseUrl = 'http://localhost:3000'
 const favoriteUrl = `${baseUrl}/favorites`
 
-if (navigator.appName == 'Microsoft Internet Explorer' ||  !!(navigator.userAgent.match(/Trident/) || navigator.userAgent.match(/rv:11/)) || (typeof $.browser !== "undefined" && $.browser.msie == 1))
-{
+const ua = window.navigator.userAgent
+if (!!ua.match(/Trident/) || !!ua.match(/Edge/) || !!ua.match(/MSIE/)) {
   alert("MetroBus 2020 utilizes technology that is not currently compatible with Internet Explorer. Please consider switching to a modern browser.");
 }
 
