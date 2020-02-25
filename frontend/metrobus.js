@@ -6,9 +6,16 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('search-by-stop').addEventListener('click', () => popUpSearch(stopSearch));
     document.getElementById('search-by-route').addEventListener('click', function() {
         popUpSearch(routeSearch);
+        
+        loaderNotification("Getting bus routes...")
+
         fetch(`${baseUrl}/metro/busroutes`)
         .then(response => response.json())
-        .then(data => getRoutes(data.Routes))
+        .then(data => {
+            getRoutes(data.Routes)
+            clearAndReturnNotification()
+        })
+        .catch(displayError)
         });
     const favLink = document.getElementById('favorites')
     favLink.style.display = 'none'
@@ -59,36 +66,48 @@ function stopSearch(event) {
     } else {
         stopId = busStop;
     }
+    
+    loaderNotification("Getting bus schedule for your stop...")
 
     fetch(`${baseUrl}/metro/busstop/${stopId}`)
     .then(response => response.json())
-    .then(data => checkForBuses(data, stopId))
-    .catch(error => errorNotification(error.message))
+    .then(data => {
+        if (data.Message) {
+            errorNotification(data.Message)
+        } else {
+            checkForBuses(data, stopId)
+            clearAndReturnNotification()
+        }
+    })
+    .catch(displayError)
 }
 
 function routeSearch(event) {
     event.preventDefault();
 
-    let form = event.currentTarget
-    let query = form.queryData.value.toString().toUpperCase();
+    const form = event.currentTarget
+    const query = form.queryData.value.toString().toUpperCase();
     
     if (query.length > 4 ) {
-        errorNotification('Invalid stop number');
+        errorNotification('Invalid route');
         return;
     }
 
-    let fullUrl = `${baseUrl}/metro/busstops/?RouteID=${query}&IncludingVariations=true`
+    const fullUrl = `${baseUrl}/metro/busstops/?RouteID=${query}&IncludingVariations=true`
     
+    loaderNotification('Finding bus stops associated with that route...')
+
     fetch(fullUrl)
     .then(response => response.json())
     .then(data => {
-        if (!!data.Message) {
+        if (data.Message) {
             errorNotification(data.Message)
             return;
         } else {
-        displaySchedule(data) }
+            clearAndReturnNotification()
+            displaySchedule(data) }
     })
-    .catch(error => errorNotification(error.message))
+    .catch(displayError)
 }
 
 function buildHeader(stopId, searchCode) {
@@ -271,9 +290,16 @@ function listRouteStops(event, schedule) {
         link.innerText = "Stop Id: " + stopTime.StopID + " at " + stopTime.StopName
         li.appendChild(link)
         li.addEventListener('click', function() {
+
+            loaderNotification(`Finding the schedule for stop #${stopTime.stopID}`)
+
             fetch(`${baseUrl}/metro/busstop/${stopTime.StopID}`)
             .then(response => response.json())
-            .then(data => checkForBuses(data, stopTime.StopID)) 
+            .then(data => {
+                clearAndReturnNotification()
+                checkForBuses(data, stopTime.StopID)
+            }) 
+            .catch(displayError)
             })
         ul.appendChild(li)
     })
@@ -354,11 +380,13 @@ function setAlarm(event, stopId, tripId) {
     };
     
     let alarm = setInterval(function () {
+
         fetch(`${baseUrl}/metro/busstop/${stopId}`)
         .then(response => response.json())
         .then(data => { checkAlarm(data.Predictions)
             getBuses(data, stopId)
         })
+        .catch(displayError)
     }, 30000)
 }
 
@@ -367,7 +395,7 @@ function buildCloseBtn() {
     closeBtn.classList.add('delete')
     closeMarker = document.createElement('i')
     closeMarker.classList.add('fas', 'fa-times')
-    closeBtn.addEventListener('click', clearNotificationBlock)
+    closeBtn.addEventListener('click', clearAndReturnNotification)
     closeBtn.appendChild(closeMarker)
     return closeBtn
 }
@@ -388,9 +416,20 @@ function errorNotification(message) {
     lostSound.play()
 }
 
+function displayError(error) {
+    errorNotification(error.message)
+}
+
+function loaderNotification(message) {
+    const notificationBlock = clearAndReturnNotification()
+    notificationBlock.classList.add('notification', 'is-warning')
+    notificationBlock.innerText = message
+    notificationBlock.appendChild(buildCloseBtn())
+}
+
 function clearAndReturnNotification() {
     const notificationBlock = document.getElementById('notification-block');
-    notificationBlock.classList.remove('notification', 'is-danger', 'is-success')
+    notificationBlock.classList.remove('notification', 'is-danger', 'is-success', 'is-warning')
     notificationBlock.innerHTML = ''
     return notificationBlock
 }

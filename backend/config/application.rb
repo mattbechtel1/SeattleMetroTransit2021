@@ -24,7 +24,7 @@ module Metrobus2020
 
     config.middleware.insert_before 0, Rack::Cors do
       allow do
-          origins '*'
+          origins Figaro.env.allowed_origin
           resource '*', headers: :any, methods: [:get, :post, :options, :delete, :patch]
       end
     end
