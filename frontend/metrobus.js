@@ -367,7 +367,7 @@ function buildCloseBtn() {
     closeBtn.classList.add('delete')
     closeMarker = document.createElement('i')
     closeMarker.classList.add('fas', 'fa-times')
-    closeBtn.addEventListener('click', clearNotificationBlock)
+    closeBtn.addEventListener('click', clearAndReturnNotification)
     closeBtn.appendChild(closeMarker)
     return closeBtn
 }
