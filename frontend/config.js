@@ -1,5 +1,5 @@
-// const baseUrl = 'https://dc-metrobus-2020-api.herokuapp.com'
-const baseUrl = 'http://localhost:3000'
+const baseUrl = 'https://dc-metrobus-2020-api.herokuapp.com'
+// const baseUrl = 'http://localhost:3000'
 const favoriteUrl = `${baseUrl}/favorites`
 
 const ua = window.navigator.userAgent
