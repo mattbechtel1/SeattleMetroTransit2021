@@ -367,15 +367,13 @@ function setAlarm(event, stopId, tripId) {
             if (myBus.Minutes <= alarmSettingMins) {
                 alarmSound.play();
                 clearInterval(alarm)
-                notificationBlock.innerHTML = ""
-                document.getElementById('main-container').innerHTML = ""
+                clearAndReturnNotification()
             }
         }
 
         if (!myBus) {
             lostSound.play()
             errorNotification("We're sorry. Your selected bus is no longer providing prediction data.")
-            notificationBlock.innerHTML = ""
         }
     };
     
