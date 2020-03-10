@@ -3,9 +3,9 @@ const confirmSound = new Audio('./assets/263133__pan14__tone-beep.wav');
 const lostSound = new Audio('./assets/259172__xtrgamr__uhoh.wav');
 
 document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('search-by-stop').addEventListener('click', () => popUpSearch(stopSearch));
+    document.getElementById('search-by-stop').addEventListener('click', () => popUpSearch(stopSearch, 'Enter 7-digit stop #'));
     document.getElementById('search-by-route').addEventListener('click', function() {
-        popUpSearch(routeSearch);
+        popUpSearch(routeSearch, 'Enter bus route #');
         
         loaderNotification("Getting bus routes...")
 
@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
     favLink.addEventListener('click', () => displayFavorites(userHeldInState.favorites))
 })
 
-function popUpSearch(searchFunction) {
+function popUpSearch(searchFunction, placeholderText) {
     const mainContainer = clearAndReturnMain()
 
     const form = document.createElement('form');
@@ -39,7 +39,7 @@ function popUpSearch(searchFunction) {
     input.classList.add('input');
     input.setAttribute('name', 'queryData');
     input.setAttribute('maxlength', '7')
-    input.setAttribute('placeholder', "Enter 7-digit stop # or route")
+    input.setAttribute('placeholder', placeholderText)
     innerDiv1.appendChild(input)
 
     const innerDiv2 = document.createElement('div')
