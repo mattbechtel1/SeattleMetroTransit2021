@@ -83,3 +83,4 @@ production:
   database: metrobus2020_production
   username: metrobus2020
   password: <%= ENV['METROBUS2020_DATABASE_PASSWORD'] %>
+  pool: <%= ENV['RAILS_MAX_THREADS'] %>
