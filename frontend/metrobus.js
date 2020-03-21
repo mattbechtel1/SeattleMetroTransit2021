@@ -20,7 +20,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const favLink = document.getElementById('favorites')
     favLink.style.display = 'none'
     favLink.addEventListener('click', () => displayFavorites(userHeldInState.favorites))
-    alert("Please note that due to service cuts related to COVID-19, metrobuses are not displaying schedule and timing data at this time. Metrorail predictions are still functional. Thank you for understanding.")
 })
 
 function popUpSearch(searchFunction, placeholderText) {
