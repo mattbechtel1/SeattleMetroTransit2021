@@ -1,5 +1,5 @@
-// const baseUrl = 'https://dc-metrobus-2020-api.herokuapp.com'
-const baseUrl = 'http://localhost:3000'
+const baseUrl = 'https://dc-metrobus-2020-api.herokuapp.com'
+// const baseUrl = 'http://localhost:3000'
 
 window.addEventListener('load', () => alert("Please note that due to service cuts related to COVID-19, metrobuses are not displaying schedule and timing data at this time. Metrorail predictions are still functional. Thank you for understanding."))
 
