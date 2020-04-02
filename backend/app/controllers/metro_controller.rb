@@ -2,39 +2,58 @@ require 'net/http'
 
 class MetroController < ApplicationController
   def bus_stops
-    response = fetch_data_with_params('https://api.wmata.com/Bus.svc/json/jRouteSchedule', params, nil)
+    
+    unless Redis.current.exists("busstops-#{params[:RouteID]}")
+      response = fetch_data_with_params('https://api.wmata.com/Bus.svc/json/jRouteSchedule', params, nil)
+      Redis.current.set("busstops-#{params["RouteID"]}", response, {ex: 604800})
+    end
 
-    render json: response
+    render json: Redis.current.get("busstops-#{params[:RouteID]}")
   end
 
   def bus_stop
-    response = fetch_data("https://api.wmata.com/NextBusService.svc/json/jPredictions/?StopID=#{params[:stop_id]}", nil)
+    unless Redis.current.exists("stop-#{params[:stop_id]}")
+      response = fetch_data("https://api.wmata.com/NextBusService.svc/json/jPredictions/?StopID=#{params[:stop_id]}", nil)
+      Redis.current.set("stop-#{params[:stop_id]}", response, {ex: 15})
+    end
   
-    render json: response
+    render json: Redis.current.get("stop-#{params[:stop_id]}")
   end
 
   def bus_route_list
-    response = fetch_data('https://api.wmata.com/Bus.svc/json/jRoutes', nil)
+    unless Redis.current.exists('allBuses')
+      response = fetch_data('https://api.wmata.com/Bus.svc/json/jRoutes', nil)
+      Redis.current.set('allBuses', response, {ex: 604800})
+    end
     
-    render json: response
+    render json: Redis.current.get('allBuses')
   end
 
   def stations
-    response = fetch_data_with_params('https://api.wmata.com/Rail.svc/json/jStations', params, nil)
+    unless Redis.current.exists('allStations')
+      response = fetch_data_with_params('https://api.wmata.com/Rail.svc/json/jStations', params, nil)
+      Redis.current.set('allStations', response, {ex: 604800})
+    end
 
-    render json: response
+    render json: Redis.current.get('allStations')
   end
 
   def station
-    response = fetch_data("https://api.wmata.com/StationPrediction.svc/json/GetPrediction/#{params[:station_code]}", nil)
+    unless Redis.current.exists("station-#{params[:station_code]}")
+      response = fetch_data("https://api.wmata.com/StationPrediction.svc/json/GetPrediction/#{params[:station_code]}", nil)
+      Redis.current.set("station-#{params[:station_code]}", response, {ex: 20})
+    end
 
-    render json: response
+    render json: Redis.current.get("station-#{params[:station_code]}")
   end
 
   def lines
-    response = fetch_data('https://api.wmata.com/Rail.svc/json/jLines', nil)
+    unless Redis.current.exists("lines")
+      response = fetch_data('https://api.wmata.com/Rail.svc/json/jLines', nil)
+      Redis.current.set('lines', response)
+    end
 
-    render json: response
+    render json: Redis.current.get('lines')
   end
 
   private
