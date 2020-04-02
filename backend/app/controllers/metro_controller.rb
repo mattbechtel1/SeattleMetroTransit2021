@@ -2,7 +2,10 @@ require 'net/http'
 
 class MetroController < ApplicationController
   def bus_stops
+    
     response = fetch_data_with_params('https://api.wmata.com/Bus.svc/json/jRouteSchedule', params, nil)
+    
+    
 
     render json: response
   end
