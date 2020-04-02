@@ -1,11 +1,9 @@
 require 'net/http'
+require 'JSON'
 
 class MetroController < ApplicationController
   def bus_stops
-    
     response = fetch_data_with_params('https://api.wmata.com/Bus.svc/json/jRouteSchedule', params, nil)
-    
-    
 
     render json: response
   end
@@ -17,9 +15,13 @@ class MetroController < ApplicationController
   end
 
   def bus_route_list
-    response = fetch_data('https://api.wmata.com/Bus.svc/json/jRoutes', nil)
+
+    unless Redis.current.exists('allBuses')
+      response = fetch_data('https://api.wmata.com/Bus.svc/json/jRoutes', nil)
+      Redis.current.set('allBuses', response, {ex: 604800})
+    end
     
-    render json: response
+    render json: Redis.current.get('allBuses')
   end
 
   def stations
