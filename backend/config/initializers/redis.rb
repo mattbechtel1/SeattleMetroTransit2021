@@ -1,5 +1,3 @@
-require 'redis'
-
 Redis.current = Redis.new(
     url: Figaro.env.redis_url,
     port: Figaro.env.redis_port,
