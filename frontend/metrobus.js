@@ -3,7 +3,7 @@ const confirmSound = new Audio('./assets/263133__pan14__tone-beep.wav');
 const lostSound = new Audio('./assets/259172__xtrgamr__uhoh.wav');
 
 document.addEventListener('DOMContentLoaded', function() {
-    fetch(`${baseUrl}/metro/alerts`) // puts metro alerts into cache
+    // fetch(`${baseUrl}/metro/alerts`) // puts metro alerts into cache
 
     document.getElementById('search-by-stop').addEventListener('click', () => popUpSearch(stopSearch, 'Enter 7-digit stop #'));
     document.getElementById('search-by-route').addEventListener('click', function() {
@@ -114,7 +114,6 @@ function routeSearch(event) {
 
 function getBuses(data, stopId) {
     const mainContainer = document.getElementById('main-container')
-    debugger
     if (data.Predictions.length < 1) {
         mainContainer.innerHTML = "No buses found."
     } else {
