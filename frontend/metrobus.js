@@ -3,6 +3,8 @@ const confirmSound = new Audio('./assets/263133__pan14__tone-beep.wav');
 const lostSound = new Audio('./assets/259172__xtrgamr__uhoh.wav');
 
 document.addEventListener('DOMContentLoaded', function() {
+    fetch(`${baseUrl}/metro/alerts`) // puts metro alerts into cache
+
     document.getElementById('search-by-stop').addEventListener('click', () => popUpSearch(stopSearch, 'Enter 7-digit stop #'));
     document.getElementById('search-by-route').addEventListener('click', function() {
         popUpSearch(routeSearch, 'Enter bus route #');

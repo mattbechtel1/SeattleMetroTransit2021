@@ -1,4 +1,7 @@
 require 'net/http'
+require 'protobuf'
+require 'google/transit/gtfs-realtime.pb'
+
 
 class MetroController < ApplicationController
   def bus_stops
@@ -54,6 +57,23 @@ class MetroController < ApplicationController
     end
 
     render json: Redis.current.get('lines')
+  end
+
+
+  # alerts does not return data to the frontend
+  def alerts
+    response = fetch_data('https://api.wmata.com/gtfs/bus-gtfsrt-alerts.pb', "{body}")
+    feed = Transit_realtime::FeedMessage.decode(response)
+    
+    feed.entity.filter {|entity| entity.id[0] == "1"}.each {|entity|
+      entity.alert.informed_entity.each {|bus|
+        Redis.current.rpush("alert-#{bus.route_id}", entity.alert.header_text.translation[0].text)
+        Redis.current.expire("alert-#{bus.route_id}", 30.minutes)
+      }
+    }
+
+    puts Redis.current.exists('alert-A2')
+    puts Redis.current.lrange("alert-A2", 0, -1)
   end
 
   private
