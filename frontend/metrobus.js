@@ -103,7 +103,7 @@ function routeSearch(event) {
     .then(response => response.json())
     .then(data => {
         if (data.bus.Message) {
-            errorNotification(data.Message)
+            errorNotification(data.bus.Message)
             return;
         } else {
             clearAndReturnNotification()
@@ -231,14 +231,21 @@ function displaySchedule(schedule) {
     dropdownSelect.setAttribute('name', 'directionNum')
     dropdownSelect.classList.add('select', 'is-info')
     innerDirectionDiv2.appendChild(dropdownSelect)
+
+    const buildOption = (direction, selection) => {
+        let option = document.createElement('option')
+        if (direction.length > 0) {
+            option.innerText = direction[0].TripDirectionText + " TOWARD " + direction[0].TripHeadsign
+            option.value = selection
+        } else {
+            option = null
+        }
+        return option
+    }
     
-    let opt0 = document.createElement('option');
-    opt0.innerText = schedule.Direction0[0].TripDirectionText + " TOWARD " + schedule.Direction0[0].TripHeadsign
-    opt0.value = 0
-    let opt1 = document.createElement('option');
-    opt1.innerText = schedule.Direction1[0].TripDirectionText + " TOWARD    " + schedule.Direction1[0].TripHeadsign
-    opt1.value = 1
-    
+    const opt0 = buildOption(schedule.Direction0, 0)
+    const opt1 = buildOption(schedule.Direction1, 1)
+
     dropdownSelect.append(opt0, opt1)
 
     const directionBtnDiv = document.createElement('div')
@@ -265,21 +272,25 @@ function listRouteStops(event, schedule) {
 
     let directionNumKey = 'Direction' + event.target.directionNum.value;
     const ul = document.createElement('ul')
-    
+    const routeId = schedule[directionNumKey][0]["RouteID"]
     schedule[directionNumKey][0]["StopTimes"].forEach(stopTime => {
         const li = document.createElement('li')
         const link = document.createElement('a')
         link.innerText = "Stop Id: " + stopTime.StopID + " at " + stopTime.StopName
         li.appendChild(link)
         li.addEventListener('click', function() {
-
-            loaderNotification(`Finding the schedule for stop #${stopTime.stopID}`)
-
-            fetch(`${baseUrl}/metro/busstop/${stopTime.StopID}`)
+            loaderNotification(`Finding the schedule for stop #${stopTime.StopID}`)
+            
+            fetch(`${baseUrl}/metro/busstop/?stopId=${stopTime.StopID}&routeId=${routeId}`)
             .then(response => response.json())
             .then(data => {
-                clearAndReturnNotification()
-                checkForBuses(data, stopTime.StopID)
+                if (data.stop.Message) {
+                    displayError(data.stop.Message)
+                } else {
+                    clearAndReturnNotification()
+                    loaderNotification(data.alerts)
+                    checkForBuses(data.stop, stopTime.StopID)
+                }
             }) 
             .catch(displayError)
             })
