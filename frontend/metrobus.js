@@ -288,7 +288,7 @@ function listRouteStops(event, schedule) {
                     displayError(data.stop.Message)
                 } else {
                     clearAndReturnNotification()
-                    loaderNotification(data.alerts)
+                    loaderNotification(...data.alerts)
                     checkForBuses(data.stop, stopTime.StopID)
                 }
             }) 

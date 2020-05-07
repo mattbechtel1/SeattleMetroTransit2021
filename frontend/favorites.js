@@ -54,11 +54,11 @@ function addFavorite(e) {
             stopNum.addEventListener('click', (e) => {
                 loaderNotification(`Getting the schedule for ${fav.description}`)
                 
-                fetch(`${baseUrl}/metro/busstop/${fav.lookup}`)
+                fetch(`${baseUrl}/metro/busstop/?stopId=${fav.lookup}`)
                 .then(response => response.json())
                 .then(data => {
                     clearAndReturnNotification()
-                    checkForBuses(data, fav.lookup)
+                    checkForBuses(data.stop, fav.lookup)
                 })
                 .catch(displayError)
             })
@@ -71,7 +71,7 @@ function addFavorite(e) {
                 .then(response => response.json())
                 .then(data => {
                     clearAndReturnNotification()
-                    displayTrains(data.Trains, fav.description)
+                    displayTrains(data.Trains, fav.description, fav.lookup)
                 })
                 .catch(displayError)
             })
