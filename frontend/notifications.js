@@ -24,11 +24,15 @@ function displayError(error) {
     errorNotification(error.message)
 }
 
-function loaderNotification(message) {
+function loaderNotification(...messages) {
     const notificationBlock = clearAndReturnNotification()
-    notificationBlock.classList.add('notification', 'is-warning')
-    notificationBlock.innerText = message
-    notificationBlock.appendChild(buildCloseBtn())
+    messages.forEach(message => {
+        const messageBlock = document.createElement('div')
+        messageBlock.classList.add('notification', 'is-warning')
+        messageBlock.innerText = message
+        messageBlock.appendChild(buildCloseBtn())
+        notificationBlock.appendChild(messageBlock)
+    })
 }
 
 function clearAndReturnNotification() {
