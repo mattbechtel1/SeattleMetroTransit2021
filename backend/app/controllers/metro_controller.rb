@@ -21,8 +21,6 @@ class MetroController < ApplicationController
     end
   
     render json: { :alerts => Redis.current.lrange("alert-#{params[:routeId]}", 0, -1), :stop => JSON.parse(Redis.current.get("stop-#{params[:stopId]}")) }.to_json
-
-    # , 
   end
 
   def bus_route_list
@@ -64,18 +62,28 @@ class MetroController < ApplicationController
 
   # alerts does not return data to the frontend
   def alerts
-    response = fetch_data('https://api.wmata.com/gtfs/bus-gtfsrt-alerts.pb', "{body}")
-    feed = Transit_realtime::FeedMessage.decode(response)
-    
-    feed.entity.filter {|entity| entity.id[0] == "1"}.each {|entity|
-      entity.alert.informed_entity.each {|bus|
-        Redis.current.del("alert-#{bus.route_id}")
-        Redis.current.rpush("alert-#{bus.route_id}", entity.alert.header_text.translation[0].text)
-        Redis.current.expire("alert-#{bus.route_id}", 30.minutes)
+    unless Redis.current.get('alert-times')
+      bus_response = fetch_data('https://api.wmata.com/gtfs/bus-gtfsrt-alerts.pb', "{body}")
+      bus_feed = Transit_realtime::FeedMessage.decode(bus_response)
+      
+      bus_feed.entity.filter {|entity| entity.id[0] == "1"}.each {|entity|
+        entity.alert.informed_entity.each {|bus|
+          Redis.current.rpush("alert-#{bus.route_id}", entity.alert.header_text.translation[0].text)
+          Redis.current.expire("alert-#{bus.route_id}", 10.minutes)
+        }
       }
-    }
 
-    # render json: feed.entity.filter {|entity| entity.id[0] == "1"}
+      train_response = fetch_data('https://api.wmata.com/gtfs/rail-gtfsrt-alerts.pb', "{body}")
+      train_feed = Transit_realtime::FeedMessage.decode(train_response)
+      train_feed.entity.each {|entity|
+        entity.alert.informed_entity.each {|train|
+          Redis.current.rpush("alert-#{train.route_id}", entity.alert.description_text.translation[0].text)
+          Redis.current.expire("alert-#{bus.route_id}", 10.minutes)
+        }
+      }
+
+      Redis.current.set('alert-timer', true, ex: 10.minutes)
+    end
   end
 
   private
