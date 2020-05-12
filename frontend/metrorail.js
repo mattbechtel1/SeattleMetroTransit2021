@@ -93,8 +93,8 @@ function lineSearch(event) {
     fetch(`${baseUrl}/metro/stations?Linecode=${event.target.opt.value}`)
     .then(response => response.json())
     .then(data => {
-        listStations(data.Stations)
-        clearAndReturnNotification()
+        loaderNotification(...data.alerts)
+        listStations(data.stations.Stations)
     })
     .catch(displayError)
 }

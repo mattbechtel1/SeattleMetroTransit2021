@@ -4,8 +4,12 @@ require 'google/transit/gtfs-realtime.pb'
 require 'json'
 
 class MetroController < ApplicationController
-  def bus_stops
-    
+
+  def color_dict(color_code)
+    {"BL" => "BLUE", "OR" => "ORANGE", "SV" => "SILVER", "GR" => "GREEN", "RD" => "RED", "YL" => "YELLOW"}[color_code]
+  end
+
+  def bus_stops    
     unless Redis.current.exists("busstops-#{params[:RouteID]}")
       response = fetch_data_with_params('https://api.wmata.com/Bus.svc/json/jRouteSchedule', params, nil)
       Redis.current.set("busstops-#{params["RouteID"]}", response, {ex: 604800})
@@ -33,12 +37,22 @@ class MetroController < ApplicationController
   end
 
   def stations
-    unless Redis.current.exists('allStations')
-      response = fetch_data_with_params('https://api.wmata.com/Rail.svc/json/jStations', params, nil)
-      Redis.current.set('allStations', response, {ex: 604800})
-    end
+    if params[:Linecode]
+      unless Redis.current.exists("#{params[:Linecode]}-stations")
+        response = fetch_data_with_params('https://api.wmata.com/Rail.svc/json/jStations', params, nil)
+        Redis.current.set("#{params[:Linecode]}-stations", response, {ex: 1.week})
+      end
 
-    render json: Redis.current.get('allStations')
+      render json: { :alerts => Redis.current.lrange("alert-#{color_dict(params[:Linecode])}", 0, -1), :stations => JSON.parse(Redis.current.get("#{params[:Linecode]}-stations"))}.to_json
+    
+    else
+      unless Redis.current.exists('allStations')
+        response = fetch_data('https://api.wmata.com/Rail.svc/json/jStations', nil)
+        Redis.current.set('allStations', response, {ex: 604800})
+      end
+
+      render json: Redis.current.get('allStations')
+    end
   end
 
   def station
@@ -76,13 +90,14 @@ class MetroController < ApplicationController
       train_response = fetch_data('https://api.wmata.com/gtfs/rail-gtfsrt-alerts.pb', "{body}")
       train_feed = Transit_realtime::FeedMessage.decode(train_response)
       train_feed.entity.each {|entity|
-        entity.alert.informed_entity.each {|train|
-          Redis.current.rpush("alert-#{train.route_id}", entity.alert.description_text.translation[0].text)
-          Redis.current.expire("alert-#{bus.route_id}", 10.minutes)
+        entity.alert.informed_entity.each {|alert|
+          Redis.current.rpush("alert-#{alert.route_id}", entity.alert.description_text.translation[0].text)
+          Redis.current.expire("alert-#{alert.route_id}", 10.minutes)
         }
       }
 
-      Redis.current.set('alert-timer', true, ex: 10.minutes)
+      Redis.current.set('alert-times', true, ex: 10.minutes)
+      render json: bus_feed
     end
   end
 
