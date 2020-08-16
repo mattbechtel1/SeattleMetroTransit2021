@@ -26,3 +26,7 @@
     font-weight: bold;
     text-align: center;
 }
+
+.right-side-heading {
+    float: right;
+}

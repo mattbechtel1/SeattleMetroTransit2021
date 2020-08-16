@@ -1,5 +1,5 @@
 function buildHeader(stopId, searchCode) {
-    const favoriteDiv = document.createElement('div')
+    const headerDiv = document.createElement('div')
     
     let describeText = function(stopId) {
         if (!isNaN(parseInt(stopId))) {
@@ -9,7 +9,8 @@ function buildHeader(stopId, searchCode) {
         }
     }(stopId)
     
-    favoriteDiv.innerText = "You've selected " + describeText
+    headerDiv.innerText = "You've selected " + describeText
+    
     const favoriteHeart = document.createElement('a')
     favoriteHeart.classList.add('clickable-emoji')
     favoriteHeart.innerText = '💗'
@@ -17,9 +18,38 @@ function buildHeader(stopId, searchCode) {
     favoriteHeart.dataset.description = stopId
     favoriteHeart.dataset.stopType = searchCode ? 'train' : 'bus'
     favoriteHeart.addEventListener('click', addFavorite)
-    favoriteDiv.appendChild(favoriteHeart)
+    
+    let refresh 
+    if (!isNaN(parseInt(stopId))) {
+        refresh = createRefresh(function() {
+            loaderNotification(`Refreshing the schedule for stop #${stopId}`)
 
-    return favoriteDiv
+            fetch(`${baseUrl}/metro/busstop/${stopId}`)
+            .then(response => response.json())
+            .then(data => {
+                checkForBuses(data.stop, stopId)
+                clearAndReturnNotification()
+            })
+            .catch(displayError)
+        })
+    } else {
+        refresh = createRefresh(function() {
+            loaderNotification(`Refreshing the train schedule for ${stopId} station.`)
+        
+            fetch(`${baseUrl}/metro/station/${searchCode}`)
+            .then(response => response.json())
+            .then(data => {
+                displayTrains(data.Trains, stopId, searchCode)
+                clearAndReturnNotification()
+            })
+            .catch(displayError)
+        })
+    }
+    refresh.classList.add("right-side-heading")
+    
+    headerDiv.append(favoriteHeart, refresh)
+
+    return headerDiv
 }
 
 function buildCloseBtn() {
@@ -39,4 +69,12 @@ const createSubmit = function(btnText) {
     submitBtn.type = 'submit';
 
     return submitBtn
+}
+
+const createRefresh = function(refreshFn) {
+    const refreshBtn = document.createElement('button')
+    refreshBtn.classList.add('button', 'is-primary')
+    refreshBtn.innerText = "Refresh"
+    refreshBtn.addEventListener('click', refreshFn)
+    return refreshBtn
 }

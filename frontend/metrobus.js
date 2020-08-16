@@ -309,7 +309,7 @@ function listRouteStops(event, schedule) {
 }
 
 function checkForBuses(data, stopId) {
-    if (!!data.Message) {
+    if (data.Message) {
         errorNotification(data.Message)
     } else {
         getBuses(data, stopId)
