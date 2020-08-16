@@ -63,8 +63,13 @@ function setAlarm(event, stopId, tripId) {
 
         fetch(`${baseUrl}/metro/busstop/${stopId}`)
         .then(response => response.json())
-        .then(data => { checkAlarm(data.Predictions)
-            getBuses(data, stopId)
+        .then(data => { 
+            if (data.stop.Message) {
+                errorNotification(data.stop.Message)
+            } else {
+                checkAlarm(data.stop.Predictions)
+                getBuses(data.stop, stopId)
+            }
         })
         .catch(displayError)
     }, 30000)
