@@ -227,11 +227,6 @@ function displaySchedule(schedule) {
     innerDirectionDiv2.classList.add('select')
     innerDirectionDiv1.appendChild(innerDirectionDiv2)
 
-    const dropdownSelect = document.createElement('select')
-    dropdownSelect.setAttribute('name', 'directionNum')
-    dropdownSelect.classList.add('select', 'is-info')
-    innerDirectionDiv2.appendChild(dropdownSelect)
-
     const buildOption = (direction, selection) => {
         let option = document.createElement('option')
         if (direction.length > 0) {
@@ -242,9 +237,21 @@ function displaySchedule(schedule) {
         }
         return option
     }
-    
+
     const opt0 = buildOption(schedule.Direction0, 0)
     const opt1 = buildOption(schedule.Direction1, 1)
+
+    if (!opt0 && !opt1) {
+        const noBusesMessage = document.createElement('div')
+        noBusesMessage.innerText = `No ${schedule.Name} buses are currently scheduled.`
+        mainContainer.appendChild(noBusesMessage)
+        return
+    }
+
+    const dropdownSelect = document.createElement('select')
+    dropdownSelect.setAttribute('name', 'directionNum')
+    dropdownSelect.classList.add('select', 'is-info')
+    innerDirectionDiv2.appendChild(dropdownSelect)
 
     dropdownSelect.append(opt0, opt1)
 
