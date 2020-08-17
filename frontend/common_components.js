@@ -45,7 +45,7 @@ function buildHeader(stopId, searchCode) {
             .catch(displayError)
         })
     }
-    refresh.classList.add("right-side-heading")
+    refresh.classList.add("right-side-header")
     
     headerDiv.append(favoriteHeart, refresh)
 
