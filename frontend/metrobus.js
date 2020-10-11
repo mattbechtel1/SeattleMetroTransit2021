@@ -77,7 +77,7 @@ function stopSearch(event) {
         if (data.Message) {
             errorNotification(data.Message)
         } else {
-            checkForBuses(data, stopId)
+            checkForBuses(data.stop, stopId)
             clearAndReturnNotification()
         }
     })
