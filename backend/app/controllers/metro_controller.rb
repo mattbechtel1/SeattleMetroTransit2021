@@ -13,10 +13,19 @@ class MetroController < ApplicationController
     "YL" => "YELLOW"
   }
 
+  BUS_ROUTE_SCHEDULE_URL = 'https://api.wmata.com/Bus.svc/json/jRouteSchedule'
+  BUS_ROUTES_URL = 'https://api.wmata.com/Bus.svc/json/jRoutes'
+  BUS_ALERTS_URL = 'https://api.wmata.com/gtfs/bus-gtfsrt-alerts.pb'
+  BUS_PREDICTIONS_URL = 'https://api.wmata.com/NextBusService.svc/json/jPredictions/'
+
+  STATIONS_URL = 'https://api.wmata.com/Rail.svc/json/jStations'
+  RAIL_LINES_URL = 'https://api.wmata.com/Rail.svc/json/jLines'
+  RAIL_ALERTS_URL = 'https://api.wmata.com/gtfs/rail-gtfsrt-alerts.pb'
+
   def bus_stops    
     unless Redis.current.exists?("busstops-#{params[:RouteID]}")
-      response = fetch_data_with_params('https://api.wmata.com/Bus.svc/json/jRouteSchedule', params, nil)
-      Redis.current.set("busstops-#{params["RouteID"]}", response, {ex: 604800})
+      response = fetch_data_with_params(BUS_ROUTE_SCHEDULE_URL, params, nil)
+      Redis.current.set("busstops-#{params["RouteID"]}", response, {ex: ONE_WEEK})
     end
 
     render json: {:alerts => Redis.current.lrange("alert-#{params[:RouteID]}", 0, -1), :bus => JSON.parse(Redis.current.get("busstops-#{params[:RouteID]}")) }.to_json
@@ -24,8 +33,8 @@ class MetroController < ApplicationController
 
   def bus_stop
     unless Redis.current.exists?("stop-#{params[:stopId]}")
-      response = fetch_data("https://api.wmata.com/NextBusService.svc/json/jPredictions/?StopID=#{params[:stopId]}", nil)
-      Redis.current.set("stop-#{params[:stopId]}", response, {ex: 15})
+      response = fetch_data("?StopID=#{params[:stopId]}", nil)
+      Redis.current.set("stop-#{params[:stopId]}", response, {ex: QUARTER_MINUTE})
     end
 
     render json: { 
@@ -35,8 +44,8 @@ class MetroController < ApplicationController
 
   def bus_route_list
     unless Redis.current.exists?('allBuses')
-      response = fetch_data('https://api.wmata.com/Bus.svc/json/jRoutes', nil)
-      Redis.current.set('allBuses', response, {ex: 604800})
+      response = fetch_data(BUS_ROUTES_URL, nil)
+      Redis.current.set('allBuses', response, {ex: ONE_WEEK})
     end
     
     render json: Redis.current.get('allBuses')
@@ -45,16 +54,16 @@ class MetroController < ApplicationController
   def stations
     if params[:Linecode]
       unless Redis.current.exists?("#{params[:Linecode]}-stations")
-        response = fetch_data_with_params('https://api.wmata.com/Rail.svc/json/jStations', params, nil)
-        Redis.current.set("#{params[:Linecode]}-stations", response, {ex: 1.week})
+        response = fetch_data_with_params(STATIONS_URL, params, nil)
+        Redis.current.set("#{params[:Linecode]}-stations", response, {ex: ONE_WEEK})
       end
 
       render json: { :alerts => Redis.current.lrange("alert-#{COLOR_DICT[params[:Linecode]]}", 0, -1), :stations => JSON.parse(Redis.current.get("#{params[:Linecode]}-stations"))}.to_json
     
     else
       unless Redis.current.exists?('allStations')
-        response = fetch_data('https://api.wmata.com/Rail.svc/json/jStations', nil)
-        Redis.current.set('allStations', response, {ex: 604800})
+        response = fetch_data(STATIONS_URL, nil)
+        Redis.current.set('allStations', response, {ex: ONE_WEEK})
       end
 
       render json: Redis.current.get('allStations')
@@ -64,7 +73,7 @@ class MetroController < ApplicationController
   def station
     unless Redis.current.exists?("station-#{params[:station_code]}")
       response = fetch_data("https://api.wmata.com/StationPrediction.svc/json/GetPrediction/#{params[:station_code]}", nil)
-      Redis.current.set("station-#{params[:station_code]}", response, {ex: 20})
+      Redis.current.set("station-#{params[:station_code]}", response, {ex: THIRD_MINUTE})
     end
 
     render json: Redis.current.get("station-#{params[:station_code]}")
@@ -72,7 +81,7 @@ class MetroController < ApplicationController
 
   def lines
     unless Redis.current.exists?("lines")
-      response = fetch_data('https://api.wmata.com/Rail.svc/json/jLines', nil)
+      response = fetch_data(RAIL_LINES_URL, nil)
       Redis.current.set('lines', response)
     end
 
@@ -83,26 +92,26 @@ class MetroController < ApplicationController
   # alerts does not return data to the frontend
   def alerts
     unless Redis.current.get('alert-times')
-      bus_response = fetch_data('https://api.wmata.com/gtfs/bus-gtfsrt-alerts.pb', "{body}")
+      bus_response = fetch_data(BUS_ALERTS_URL, "{body}")
       bus_feed = Transit_realtime::FeedMessage.decode(bus_response)
       
-      bus_feed.entity.filter {|entity| entity.id[0] == "1"}.each {|entity|
-        entity.alert.informed_entity.each {|bus|
+      bus_feed.entity.filter { |entity| entity.id[0] == "1" }.each do |entity|
+        entity.alert.informed_entity.each do |bus|
           Redis.current.rpush("alert-#{bus.route_id}", entity.alert.header_text.translation[0].text)
-          Redis.current.expire("alert-#{bus.route_id}", 10.minutes)
-        }
-      }
+          Redis.current.expire("alert-#{bus.route_id}", TEN_MINUTES)
+        end
+      end
 
-      train_response = fetch_data('https://api.wmata.com/gtfs/rail-gtfsrt-alerts.pb', "{body}")
+      train_response = fetch_data(RAIL_ALERTS_URL, "{body}")
       train_feed = Transit_realtime::FeedMessage.decode(train_response)
-      train_feed.entity.each {|entity|
-        entity.alert.informed_entity.each {|alert|
+      train_feed.entity.each do |entity|
+        entity.alert.informed_entity.each do |alert|
           Redis.current.rpush("alert-#{alert.route_id}", entity.alert.description_text.translation[0].text)
-          Redis.current.expire("alert-#{alert.route_id}", 10.minutes)
-        }
-      }
+          Redis.current.expire("alert-#{alert.route_id}", TEN_MINUTES)
+        end
+      end
 
-      Redis.current.set('alert-times', true, ex: 10.minutes)
+      Redis.current.set('alert-times', true, ex: TEN_MINUTES)
       render json: bus_feed
     end
   end
