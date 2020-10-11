@@ -4,10 +4,14 @@ require 'google/transit/gtfs-realtime.pb'
 require 'json'
 
 class MetroController < ApplicationController
-
-  def color_dict(color_code)
-    {"BL" => "BLUE", "OR" => "ORANGE", "SV" => "SILVER", "GR" => "GREEN", "RD" => "RED", "YL" => "YELLOW"}[color_code]
-  end
+  COLOR_DICT = {
+    "BL" => "BLUE",
+    "OR" => "ORANGE",
+    "SV" => "SILVER",
+    "GR" => "GREEN",
+    "RD" => "RED",
+    "YL" => "YELLOW"
+  }
 
   def bus_stops    
     unless Redis.current.exists?("busstops-#{params[:RouteID]}")
@@ -23,8 +27,10 @@ class MetroController < ApplicationController
       response = fetch_data("https://api.wmata.com/NextBusService.svc/json/jPredictions/?StopID=#{params[:stopId]}", nil)
       Redis.current.set("stop-#{params[:stopId]}", response, {ex: 15})
     end
-  
-    render json: { :alerts => Redis.current.lrange("alert-#{params[:routeId]}", 0, -1), :stop => JSON.parse(Redis.current.get("stop-#{params[:stopId]}")) }.to_json
+
+    render json: { 
+      :alerts => Redis.current.lrange("alert-#{params[:routeId]}", 0, -1),
+      :stop => JSON.parse(Redis.current.get("stop-#{params[:stopId]}")) }.to_json
   end
 
   def bus_route_list
@@ -43,7 +49,7 @@ class MetroController < ApplicationController
         Redis.current.set("#{params[:Linecode]}-stations", response, {ex: 1.week})
       end
 
-      render json: { :alerts => Redis.current.lrange("alert-#{color_dict(params[:Linecode])}", 0, -1), :stations => JSON.parse(Redis.current.get("#{params[:Linecode]}-stations"))}.to_json
+      render json: { :alerts => Redis.current.lrange("alert-#{COLOR_DICT[params[:Linecode]]}", 0, -1), :stations => JSON.parse(Redis.current.get("#{params[:Linecode]}-stations"))}.to_json
     
     else
       unless Redis.current.exists?('allStations')
