@@ -53,9 +53,10 @@ class MetroController < ApplicationController
   end
 
   def stations
+    response = fetch_data(STATIONS_URL, nil)
+
     if params[:Linecode]
       unless Redis.current.exists?("#{params[:Linecode]}-stations")
-        response = fetch_data(STATIONS_URL, nil)
         Redis.current.set("#{params[:Linecode]}-stations", response, {ex: ONE_WEEK})
       end
 
@@ -63,7 +64,6 @@ class MetroController < ApplicationController
     
     else
       unless Redis.current.exists?('allStations')
-        response = fetch_data(STATIONS_URL, nil)
         Redis.current.set('allStations', response, {ex: ONE_WEEK})
       end
 
