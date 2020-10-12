@@ -1,6 +1,6 @@
 Rails.application.routes.draw do
   get 'metro/busstops/', to: 'metro#bus_stops'
-  get 'metro/busstop/:stopId', to: 'metro#bus_stop'
+  get 'metro/busstop/:StopId', to: 'metro#bus_stop'
   get 'metro/busstop/', to: 'metro#bus_stop'
   get 'metro/stations'
   get 'metro/station/:station_code', to: 'metro#station'

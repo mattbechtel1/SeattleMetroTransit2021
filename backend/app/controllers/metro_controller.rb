@@ -21,10 +21,11 @@ class MetroController < ApplicationController
   STATIONS_URL = 'https://api.wmata.com/Rail.svc/json/jStations'
   RAIL_LINES_URL = 'https://api.wmata.com/Rail.svc/json/jLines'
   RAIL_ALERTS_URL = 'https://api.wmata.com/gtfs/rail-gtfsrt-alerts.pb'
+  STATION_PREDICTIONS_URL = 'https://api.wmata.com/StationPrediction.svc/json/GetPrediction'
 
   def bus_stops    
     unless Redis.current.exists?("busstops-#{params[:RouteID]}")
-      response = fetch_data_with_params(BUS_ROUTE_SCHEDULE_URL, params, nil)
+      response = fetch_data(BUS_ROUTE_SCHEDULE_URL, nil)
       Redis.current.set("busstops-#{params["RouteID"]}", response, {ex: ONE_WEEK})
     end
 
@@ -32,14 +33,14 @@ class MetroController < ApplicationController
   end
 
   def bus_stop
-    unless Redis.current.exists?("stop-#{params[:stopId]}")
-      response = fetch_data("?StopID=#{params[:stopId]}", nil)
-      Redis.current.set("stop-#{params[:stopId]}", response, {ex: QUARTER_MINUTE})
+    unless Redis.current.exists?("stop-#{params[:StopId]}")
+      response = fetch_data(BUS_PREDICTIONS_URL, nil)
+      Redis.current.set("stop-#{params[:StopId]}", response, {ex: QUARTER_MINUTE})
     end
 
     render json: { 
       :alerts => Redis.current.lrange("alert-#{params[:routeId]}", 0, -1),
-      :stop => JSON.parse(Redis.current.get("stop-#{params[:stopId]}")) }.to_json
+      :stop => JSON.parse(Redis.current.get("stop-#{params[:StopId]}")) }.to_json
   end
 
   def bus_route_list
@@ -54,7 +55,7 @@ class MetroController < ApplicationController
   def stations
     if params[:Linecode]
       unless Redis.current.exists?("#{params[:Linecode]}-stations")
-        response = fetch_data_with_params(STATIONS_URL, params, nil)
+        response = fetch_data(STATIONS_URL, nil)
         Redis.current.set("#{params[:Linecode]}-stations", response, {ex: ONE_WEEK})
       end
 
@@ -72,7 +73,7 @@ class MetroController < ApplicationController
 
   def station
     unless Redis.current.exists?("station-#{params[:station_code]}")
-      response = fetch_data("https://api.wmata.com/StationPrediction.svc/json/GetPrediction/#{params[:station_code]}", nil)
+      response = fetch_data("#{STATION_PREDICTIONS_URL}/#{params[:station_code]}", nil)
       Redis.current.set("station-#{params[:station_code]}", response, {ex: THIRD_MINUTE})
     end
 
@@ -120,6 +121,7 @@ class MetroController < ApplicationController
 
   def fetch_data(url, body)
     uri = URI(url)
+    uri.query = URI.encode_www_form(strong_params.to_h)
     request = Net::HTTP::Get.new(uri.request_uri)
     request['api_key'] = Figaro.env.wmata_primary_key
     request.body = body
@@ -131,25 +133,8 @@ class MetroController < ApplicationController
     response.body
   end
 
-  def fetch_data_with_params(url, params, body)
-    uri = URI(url)
-    query = URI.encode_www_form(params.to_unsafe_h)
-
-    if uri.query && uri.query.length > 0
-      uri.query += '&' + query
-    else
-      uri.query = query
-    end
-
-    request = Net::HTTP::Get.new(uri.request_uri)
-    request['api_key'] = Figaro.env.wmata_primary_key
-    request.body = body
-    
-    response = Net::HTTP.start(uri.host, uri.port, :use_ssl => uri.scheme == 'https') do |http|
-      http.request(request)
-    end
-
-    response.body
+  def strong_params
+    params.permit(:RouteID, :IncludingVariations, :StopId, :Linecode)
   end
 
 end
