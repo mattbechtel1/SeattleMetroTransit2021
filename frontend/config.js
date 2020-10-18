@@ -1,5 +1,5 @@
-const baseUrl = 'https://dc-metrobus-2020-api.herokuapp.com'
-// const baseUrl = 'http://localhost:3000'
+// const baseUrl = 'https://dc-metrobus-2020-api.herokuapp.com'
+const baseUrl = 'http://localhost:3000'
 
 const ua = window.navigator.userAgent
 if (!!ua.match(/Trident/) || !!ua.match(/Edge/) || !!ua.match(/MSIE/)) {

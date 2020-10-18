@@ -84,33 +84,54 @@ function stopSearch(event) {
     .catch(displayError)
 }
 
-function routeSearch(event) {
+function routeSearch(event, format = 'metro') {
     event.preventDefault();
 
     const form = event.currentTarget
-    const query = form.queryData.value.toString().toUpperCase();
+    const query = form.queryData.value.toString()
     
-    if (query.length > 4 ) {
+    if (query.length > 4 && format == 'metro') {
         errorNotification('Invalid route');
         return;
     }
 
-    const fullUrl = `${baseUrl}/metro/busstops/?RouteID=${query}&IncludingVariations=true`
+    function findUrl() {
+        switch(format) {
+            case 'metro': 
+                query = query.toUpperCase()
+                return `${baseUrl}/metro/busstops/?RouteID=${query}&IncludingVariations=true`
+            case 'circulator':
+                return `${baseUrl}/circulator/busstops/${query}`
+            default: 
+                errorNotification("Unrecognized Agency")
+                throw "Unrecognized agency"
+        }
+    }
+
+    const fullUrl = findUrl()
     
     loaderNotification('Finding bus stops associated with that route...')
 
+    function parseRouteData(data) {
+        switch(format) {
+            case 'metro':
+                if (data.bus.Message) {
+                    errorNotification(data.bus.Message)
+                    return;
+                } else {
+                    clearAndReturnNotification()
+                    displaySchedule(data.bus)
+                    loaderNotification(...data.alerts)
+                }
+            case 'circulator':
+                clearAndReturnNotification()
+                displayCirculatorStops(data.body.route)
+        }
+    }
+
     fetch(fullUrl)
     .then(response => response.json())
-    .then(data => {
-        if (data.bus.Message) {
-            errorNotification(data.bus.Message)
-            return;
-        } else {
-            clearAndReturnNotification()
-            displaySchedule(data.bus)
-            loaderNotification(...data.alerts)
-        }
-    })
+    .then(parseRouteData)
     .catch(displayError)
 }
 
@@ -158,7 +179,7 @@ function getBuses(data, stopId) {
     }
 }
 
-function getRoutes(routeList) {
+function getRoutes(routeList, format = 'metro') {
     const secondForm = document.createElement('form')
     secondForm.id = 'route-list-form'
     
@@ -180,16 +201,36 @@ function getRoutes(routeList) {
     defaultOpt.innerText = "Or select a route"
     select.appendChild(defaultOpt)
 
-    routeList = filterRoutes(routeList)
+    if (format == 'metro') {
+        routeList = filterRoutes(routeList)
+    }
 
-    routeList.forEach(function(route) {
+    function metroRoute(route) {
         const option = document.createElement('option')
         const routeNumber = route.RouteID;
         option.value = routeNumber;
         option.innerText = routeNumber + " " + route.LineDescription
 
         select.appendChild(option)
-    })
+    }
+
+    function circulatorRoute(route) {
+        const option = document.createElement('option')
+        const routeTag = route.tag
+        option.value = routeTag
+        option.innerText = route.title
+
+        select.appendChild(option)
+    }
+
+    function buildRoute(route) {
+        switch(format) {
+            case 'metro': metroRoute(route); break;
+            case 'circulator': circulatorRoute(route); break
+        }
+    }
+
+    routeList.forEach(route => buildRoute(route))
 
     routesListInnerDiv2.appendChild(select)
 
@@ -201,7 +242,7 @@ function getRoutes(routeList) {
 
     routesListOuterDiv.append(routesListInnerDiv1, btnDiv)
 
-    secondForm.addEventListener('submit', function(e) {routeSearch(e)})
+    secondForm.addEventListener('submit', function(e) {routeSearch(e, format)})
 
     const mainContainer = document.getElementById('main-container')
     mainContainer.appendChild(secondForm);

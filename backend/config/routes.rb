@@ -8,7 +8,9 @@ Rails.application.routes.draw do
   get 'metro/lines'
   get 'metro/alerts'
 
+  get 'circulator/busstops/:routeId', to: 'circulator#bus_stops'
   get 'circulator/busstop/:stopId', to: 'circulator#bus_stop'
+  get 'circulator/busroutes', to: 'circulator#bus_route_list'
 
   resources :favorites, only: [:create, :destroy, :update]
   resources :users, only: [:create]
