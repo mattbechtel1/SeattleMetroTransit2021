@@ -23,4 +23,4 @@
 
 # Ignore application configuration
 /config/application.yml
-*dump.rdb
+/dump.rdb
