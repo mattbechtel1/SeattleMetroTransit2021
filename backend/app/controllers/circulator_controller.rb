@@ -37,7 +37,6 @@ class CirculatorController < ApplicationController
             })
             CACHE.set("allCirculators", response, ex: 1.week)
         end
-        # render xml: CACHE.get("allCirculators")
         render json: Hash.from_xml(CACHE.get("allCirculators")).to_json
     end
     
@@ -45,10 +44,14 @@ class CirculatorController < ApplicationController
 
     def fetch_data url, params
         uri = URI(url)
-        uri.query = URI.encode_www_form(params)
+        uri.query = URI.encode_www_form(strong_params.to_h)
 
         response = Net::HTTP.get_response(uri)
         return response.body if response.is_a?(Net::HTTPSuccess)
+    end
+
+    def strong_params
+        params.permit(:stopId, :routeId)
     end
 
 end
