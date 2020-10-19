@@ -88,7 +88,7 @@ function routeSearch(event, format = 'metro') {
     event.preventDefault();
 
     const form = event.currentTarget
-    const query = form.queryData.value.toString()
+    let query = form.queryData.value.toString()
     
     if (query.length > 4 && format == 'metro') {
         errorNotification('Invalid route');
@@ -122,10 +122,12 @@ function routeSearch(event, format = 'metro') {
                     clearAndReturnNotification()
                     displaySchedule(data.bus)
                     loaderNotification(...data.alerts)
+                    break;
                 }
             case 'circulator':
                 clearAndReturnNotification()
                 displayCirculatorStops(data.body.route)
+                break;
         }
     }
 
@@ -198,7 +200,7 @@ function getRoutes(routeList, format = 'metro') {
     select.setAttribute('name', 'queryData')
     const defaultOpt = document.createElement('option')
 
-    defaultOpt.innerText = "Or select a route"
+    defaultOpt.innerText = format == 'metro' ? "Or select a route" : "Select a route"
     select.appendChild(defaultOpt)
 
     if (format == 'metro') {

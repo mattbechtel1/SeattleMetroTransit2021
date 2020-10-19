@@ -1,8 +1,12 @@
 document.addEventListener("DOMContentLoaded", function() {
     document.getElementById('circulator-by-route').addEventListener('click', function() {
+        clearAndReturnMain()
+        loaderNotification("Getting bus routes...")
+
         fetch(`${baseUrl}/circulator/busroutes`)
         .then(response => response.json())
         .then(data => {
+            clearAndReturnNotification()
             getRoutes(data.body.route, 'circulator')
         })
     })
