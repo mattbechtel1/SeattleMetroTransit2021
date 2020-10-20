@@ -231,7 +231,7 @@ function getRoutes(routeList, format = 'metro') {
             case 'circulator': circulatorRoute(route); break
         }
     }
-
+    
     routeList.forEach(route => buildRoute(route))
 
     routesListInnerDiv2.appendChild(select)

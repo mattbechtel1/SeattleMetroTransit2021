@@ -6,6 +6,9 @@ document.addEventListener("DOMContentLoaded", function() {
         fetch(`${baseUrl}/circulator/busroutes`)
         .then(response => response.json())
         .then(data => {
+            if (data.body.Error) {
+                displayError(data.body.Error)
+            }
             clearAndReturnNotification()
             getRoutes(data.body.route, 'circulator')
         })
@@ -16,7 +19,7 @@ function getStopNameByTag(tag, stopList) {
     return stopList.find(stop => stop.tag == tag).title
 }
 
-function displayCirculatorStops({title: title, stop: stops, direction: directons}) {
+function displayCirculatorStops({title: title, stop: stops, direction: directions}) {
     const mainContainer = clearAndReturnMain()
     let div = document.createElement('div')
     div.innerText = "You have selected " + title + "."
@@ -42,10 +45,10 @@ function displayCirculatorStops({title: title, stop: stops, direction: directons
         return option
     }
 
-    const options = directons.map(direction => buildOption(direction, direction.tag))
+    const options = directions.map(direction => buildOption(direction, direction.tag))
     
     const dropdownSelect = document.createElement('select')
-    dropdownSelect.setAttribute('name', 'directionNum')
+    dropdownSelect.setAttribute('name', 'direction')
     dropdownSelect.classList.add('select', 'is-info')
     innerDirectionDiv2.appendChild(dropdownSelect)
     dropdownSelect.append(...options)
@@ -58,7 +61,48 @@ function displayCirculatorStops({title: title, stop: stops, direction: directons
     
     innerDirectionDiv2.append(dropdownSelect);
     outerDirectionDiv.append(innerDirectionDiv1, directionBtnDiv)
-    
-    dropdownForm.addEventListener('submit', (e) => listRouteStops(e, schedule))
+    dropdownForm.addEventListener('submit', (e) => listCirculatorRouteStops(e, stops, directions))
     mainContainer.append(div, dropdownForm)
+}
+
+function listCirculatorRouteStops(event, stops, directions) {
+    event.preventDefault()
+
+    let directionKey = event.target.direction.value;
+    const ul = document.createElement('ul')
+    const dirStops = directions.find(direction => direction.tag === directionKey).stop
+
+    function convertTagToStop(tag) {
+        return stops.find(stop => stop.tag === tag)
+    }
+
+    dirStops.forEach(stop => {
+        let stopObj = convertTagToStop(stop.tag)
+        const li = document.createElement('li')
+        const link = document.createElement('a')
+        link.innerText = "Stop " + stopObj.stopId + ": " + stopObj.title
+        li.appendChild(link)
+        li.addEventListener('click', function() {
+            loaderNotification(`Finding the schedule for stop #${stopObj.stopId}`)
+            
+            fetch(`${baseUrl}/circulator/busstop/${stopObj.stopId}`)
+            .then(response => response.json())
+            .then(data => {
+                debugger
+                if (data.error) {
+                    displayError(data.error)
+                } else {
+                    clearAndReturnNotification()
+                    // Start coding here for predictions body.predictions
+                    // When none, body.predictions[#].dirTitleBecauseNoPredictions exists
+                    // checkForBuses(data.stop, stopTime.StopID)
+                }
+            }) 
+            .catch(displayError)
+            })
+        ul.appendChild(li)
+    })
+
+    const mainContainer = clearAndReturnMain()
+    mainContainer.append(ul)
 }

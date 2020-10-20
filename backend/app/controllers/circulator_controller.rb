@@ -7,13 +7,12 @@ class CirculatorController < ApplicationController
     PREDICTION_URL = 'http://webservices.nextbus.com/service/publicXMLFeed'
 
     def bus_stops
-        unless CACHE.exists("busstops-#{params[:routeId]}")
+        unless CACHE.exists?("busstops-#{params[:routeId]}")
             response = fetch_data(PREDICTION_URL, {
                 command: 'routeConfig',
                 a: AGENCY,
-                r: params[:routeId]
-            })
-            CACHE.set("busstops-#{params[:routeId]}", response, ex: 1.week)
+            }.merge(strong_params.to_h))
+            CACHE.set("busstops-#{params[:routeId]}", response, ex: ONE_WEEK)
         end
         render json: Hash.from_xml(CACHE.get("busstops-#{params[:routeId]}")).to_json
     end
@@ -23,10 +22,10 @@ class CirculatorController < ApplicationController
             response = fetch_data(PREDICTION_URL, {
                 command: 'predictions',
                 a: AGENCY,
-                stopId: params[:stopId]
-            })
+            }.merge(strong_params.to_h))
+            CACHE.set("circ-stop-#{params[:stopId]}", response, ex: QUARTER_MINUTE)
         end
-        render xml: response
+        render json: Hash.from_xml(CACHE.get("circ-stop-#{params[:stopId]}")).to_json
     end
 
     def bus_route_list
@@ -35,7 +34,7 @@ class CirculatorController < ApplicationController
                 command: 'routeList',
                 a: AGENCY
             })
-            CACHE.set("allCirculators", response, ex: 1.week)
+            CACHE.set("allCirculators", response, ex: ONE_WEEK)
         end
         render json: Hash.from_xml(CACHE.get("allCirculators")).to_json
     end
@@ -44,8 +43,7 @@ class CirculatorController < ApplicationController
 
     def fetch_data url, params
         uri = URI(url)
-        uri.query = URI.encode_www_form(strong_params.to_h)
-
+        uri.query = URI.encode_www_form(params)
         response = Net::HTTP.get_response(uri)
         return response.body if response.is_a?(Net::HTTPSuccess)
     end
