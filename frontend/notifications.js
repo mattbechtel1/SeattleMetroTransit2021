@@ -20,8 +20,8 @@ function errorNotification(message) {
     lostSound.play()
 }
 
-function displayError(error) {
-    errorNotification(error.message)
+function displayError(errorMessage) {
+    errorNotification(errorMessage)
 }
 
 function loaderNotification(...messages) {

@@ -1,5 +1,6 @@
-function buildHeader(stopId, searchCode) {
+function buildHeader(stopId, searchCode, agency) {
     const headerDiv = document.createElement('div')
+    headerDiv.id = 'header'
     
     let describeText = function(stopId) {
         if (!isNaN(parseInt(stopId))) {
@@ -21,21 +22,32 @@ function buildHeader(stopId, searchCode) {
     
     let refresh 
     if (!isNaN(parseInt(stopId))) {
-        refresh = createRefresh(function() {
-            loaderNotification(`Refreshing the schedule for stop #${stopId}`)
-
-            fetch(`${baseUrl}/metro/busstop/${stopId}`)
-            .then(response => response.json())
-            .then(data => {
-                checkForBuses(data.stop, stopId)
-                clearAndReturnNotification()
+        if (agency === 'metro') {
+            refresh = createRefresh(function() {                
+                loaderNotification(`Refreshing the schedule for stop #${stopId}`)
+                fetch(`${baseUrl}/metro/busstop/${stopId}`)
+                .then(response => response.json())
+                .then(data => {
+                    checkForBuses(data.stop, stopId)
+                    clearAndReturnNotification()
+                })
+                .catch(displayError)
             })
-            .catch(displayError)
-        })
+        } else if (agency === 'circulator') {
+            refresh = createRefresh(function() {
+                loaderNotification(`Refreshing the schedule for stop #${stopId}`)
+                fetch(`${baseUrl}/circulator/busstop/${stopId}`)
+                .then(response => response.json())
+                .then(data => {
+                    getCirculatorBuses(data.body.predictions, stopId)
+                    clearAndReturnNotification()
+                })
+                .catch(displayError)
+            })
+        }
     } else {
         refresh = createRefresh(function() {
             loaderNotification(`Refreshing the train schedule for ${stopId} station.`)
-        
             fetch(`${baseUrl}/metro/station/${searchCode}`)
             .then(response => response.json())
             .then(data => {

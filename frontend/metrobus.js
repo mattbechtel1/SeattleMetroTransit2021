@@ -144,7 +144,7 @@ function getBuses(data, stopId) {
     } else {
         mainContainer.innerHTML = ""
 
-        const heading = buildHeader(stopId)
+        const heading = buildHeader(stopId, null, 'metro')
         
         const table = document.createElement('table')
         table.classList.add('table', 'is-hoverable')
@@ -167,7 +167,7 @@ function getBuses(data, stopId) {
             let busMinutes = document.createElement('td');
             busMinutes.innerText = prediction.Minutes + ' minutes';
             let alarmSet = document.createElement('a');
-            alarmSet.addEventListener('click', askAlarm);
+            alarmSet.addEventListener('click', (e) => askAlarm(e, 'metro'));
             alarmSet.dataset.stop = stopId;
             alarmSet.dataset.minutes = prediction.Minutes;
             alarmSet.dataset.tripId = prediction.TripID;
@@ -331,7 +331,7 @@ function listRouteStops(event, schedule) {
         li.addEventListener('click', function() {
             loaderNotification(`Finding the schedule for stop #${stopTime.StopID}`)
             
-            fetch(`${baseUrl}/metro/busstop/?stopId=${stopTime.StopID}&routeId=${routeId}`)
+            fetch(`${baseUrl}/metro/busstop/${stopTime.StopID}`)
             .then(response => response.json())
             .then(data => {
                 if (data.stop.Message) {

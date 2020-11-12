@@ -8,6 +8,15 @@
     font-weight: bold;
 }
 
+.circulator-box {
+    width: auto;
+    /* border: 1px solid orangered; */
+    margin: 5px;
+    float: left;
+    text-align: center;
+    font-weight: bold;
+}
+
 .bus-description {
     float: right;
 } 

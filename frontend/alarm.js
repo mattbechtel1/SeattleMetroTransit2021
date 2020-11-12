@@ -1,4 +1,4 @@
-function askAlarm(event) {
+function askAlarm(event, agency) {
     let tripContainer = event.target.parentNode;
     let newTr = document.createElement('tr')
     let newTd = document.createElement('td')
@@ -19,7 +19,7 @@ function askAlarm(event) {
     internalInput.setAttribute('min', '1');
     internalInput.setAttribute('max', event.target.dataset.minutes)
     let internalSubmit = createSubmit('Set Alarm')
-    internalForm.addEventListener('submit', function(e) {setAlarm(e, stopId, tripId)})
+    internalForm.addEventListener('submit', function(e) {setAlarm(e, stopId, tripId, agency)})
     let internalClose = document.createElement('button');
     internalClose.classList.add('button', 'is-primary')
     internalClose.innerText = "Close"
@@ -35,42 +35,78 @@ function closeAlarmDrawer(event) {
     event.target.parentNode.remove()
 }
 
-function setAlarm(event, stopId, tripId) {
+function setAlarm(event, stopId, tripId, agency) {
     event.preventDefault();
     const alarmSettingMins = event.target.alarm.value;
     
     //notification
     confirmNotification(`An alarm has been set for bus #${tripId} at stop #${stopId} with ${alarmSettingMins} minutes' warning.`)
     
-    let checkAlarm = function(busPredictions) {
-        let myBus = busPredictions.find(bus => bus.TripID === tripId)
-        
-        if (!!myBus) {
-            if (myBus.Minutes <= alarmSettingMins) {
+    function myBus(busPredictions) {
+        switch(agency) {
+            case 'metro': return busPredictions.find(bus => bus.TripID === tripId)
+            case 'circulator': return busPredictions.find(bus => bus.tripTag === tripId)
+        }
+    }
+
+    function myBusMinutes(predictions) {
+        switch(agency) {
+            case 'metro': return predictions.Minutes
+            case 'circulator': return predictions.minutes
+        }
+    }
+
+    let checkAlarm = function(busPredictions) {  
+        predictions = myBus(busPredictions)    
+        if (predictions) {
+            if (myBusMinutes(predictions) <= alarmSettingMins) {
                 alarmSound.play();
                 clearInterval(alarm)
                 clearAndReturnNotification()
             }
         }
 
-        if (!myBus) {
+        if (!predictions) {
             lostSound.play()
             errorNotification("We're sorry. Your selected bus is no longer providing prediction data.")
         }
     };
+
+    function getUrl() {
+        switch(agency) {
+            case 'metro': return `${baseUrl}/metro/busstop/${stopId}`;
+            case 'circulator': return `${baseUrl}/circulator/busstop/${stopId}`
+        }
+    }
+
+    function parseData(data) {
+        switch(agency) {
+            case 'metro':
+                if (data.stop.Message) {
+                    errorNotification(data.stop.Message)
+                    return
+                } else {
+                    checkAlarm(data.stop.Predictions)
+                    getBuses(data.stop, stopId)
+                    return
+                }
+            case 'circulator':
+                if (data.error) {
+                    displayError(data.error)
+                    return
+                } else {
+                    checkAlarm(data.body.predictions.direction.prediction)
+                    getCirculatorBuses(data.body.predictions, stopId)
+                    return
+                }
+
+        }
+    }
     
     let alarm = setInterval(function () {
-
-        fetch(`${baseUrl}/metro/busstop/${stopId}`)
+        fetch(getUrl())
         .then(response => response.json())
-        .then(data => { 
-            if (data.stop.Message) {
-                errorNotification(data.stop.Message)
-            } else {
-                checkAlarm(data.stop.Predictions)
-                getBuses(data.stop, stopId)
-            }
-        })
+        .then(parseData)
         .catch(displayError)
     }, 30000)
 }

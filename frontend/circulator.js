@@ -88,14 +88,12 @@ function listCirculatorRouteStops(event, stops, directions) {
             fetch(`${baseUrl}/circulator/busstop/${stopObj.stopId}`)
             .then(response => response.json())
             .then(data => {
-                debugger
                 if (data.error) {
                     displayError(data.error)
                 } else {
-                    clearAndReturnNotification()
-                    // Start coding here for predictions body.predictions
-                    // When none, body.predictions[#].dirTitleBecauseNoPredictions exists
-                    // checkForBuses(data.stop, stopTime.StopID)
+                    const mainContainer = clearAndReturnNotification()
+                    mainContainer.innerHTML = ""
+                    getCirculatorBuses(data.body.predictions, stopObj.stopId)
                 }
             }) 
             .catch(displayError)
@@ -105,4 +103,65 @@ function listCirculatorRouteStops(event, stops, directions) {
 
     const mainContainer = clearAndReturnMain()
     mainContainer.append(ul)
+}
+
+function getCirculatorBuses(predictions, stopNumber, heading, tableBody) {
+    const mainContainer = clearAndReturnMain()
+
+    if (!heading) {
+        heading = buildHeader(stopNumber, null, "circulator")
+        mainContainer.append(heading)
+    }
+
+    if (!tableBody) {
+        tableBody = document.createElement('tbody')
+    }
+
+    let predictions_list
+    if (Array.isArray(predictions)) {
+        predictions.forEach(busRoute => getCirculatorBuses(busRoute, stopNumber, heading, tableBody))
+        table = document.createElement('table')
+        table.classList.add('table', 'is-hoverable')
+        table.appendChild(tableBody)
+        mainContainer.append(table)
+        return
+    } else {
+        if (predictions.direction) {
+            predictions_list = predictions.direction.prediction
+            table = document.createElement('table')
+            table.classList.add('table', 'is-hoverable')
+            table.appendChild(tableBody)
+            mainContainer.append(table)
+        }
+        else if (predictions.dirTitleBecauseNoPredictions) {
+            displayError(`No current predictions for ${predictions.stopTitle}`)
+            return
+        }
+    }
+
+    predictions_list.forEach(bus => {
+        let row = document.createElement('tr')
+
+        let busNum = document.createElement('td');
+        const busBox = document.createElement('div');
+        busBox.classList.add('circulator-box')
+        busBox.innerText = predictions.routeTitle;
+
+        const busDesc = document.createElement('div')
+        busDesc.classList.add('bus-description')
+        busDesc.innerText = " " + predictions.direction.title;
+        busNum.append(busBox, busDesc)
+
+        let busMinutes = document.createElement('td');
+        busMinutes.innerText = bus.minutes + ' minutes';
+        let alarmSet = document.createElement('a');
+        alarmSet.addEventListener('click', e => askAlarm(e, 'circulator'));
+        alarmSet.dataset.stop = stopNumber;
+        alarmSet.dataset.minutes = bus.minutes;
+        alarmSet.dataset.tripId = bus.tripTag;
+        alarmSet.classList.add('clickable-emoji')
+        alarmSet.innerText = '⏰';
+        row.append(busNum, busMinutes, alarmSet)
+        tableBody.appendChild(row)
+    })
 }

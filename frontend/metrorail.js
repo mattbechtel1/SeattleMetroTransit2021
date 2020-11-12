@@ -172,18 +172,8 @@ function displayTrains(trains, stationName, stationCode) {
             } else {
                 trainMinutes.innerText = prediction.Min
             }
-
-            // let alarmSet = document.createElement('a');
-            // alarmSet.addEventListener('click', askAlarm);
-            // alarmSet.dataset.stop = stopId;
-            // alarmSet.dataset.minutes = prediction.Minutes;
-            // alarmSet.dataset.tripId = prediction.TripID;
-            // alarmset.classList.add('clickable-emoji')
-            // alarmSet.innerText = '⏰';
             
-            row.append(trainColor, trainMinutes
-                // , alarmSet
-                )
+            row.append(trainColor, trainMinutes)
             tableBody.appendChild(row)
         })
         mainContainer.append(heading, table)

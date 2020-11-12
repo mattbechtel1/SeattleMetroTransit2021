@@ -7,14 +7,14 @@ class CirculatorController < ApplicationController
     PREDICTION_URL = 'http://webservices.nextbus.com/service/publicXMLFeed'
 
     def bus_stops
-        unless CACHE.exists?("busstops-#{params[:routeId]}")
+        unless CACHE.exists?("busstops-#{params[:r]}")
             response = fetch_data(PREDICTION_URL, {
                 command: 'routeConfig',
                 a: AGENCY,
             }.merge(strong_params.to_h))
-            CACHE.set("busstops-#{params[:routeId]}", response, ex: ONE_WEEK)
+            CACHE.set("busstops-#{params[:r]}", response, ex: ONE_WEEK)
         end
-        render json: Hash.from_xml(CACHE.get("busstops-#{params[:routeId]}")).to_json
+        render json: Hash.from_xml(CACHE.get("busstops-#{params[:r]}")).to_json
     end
 
     def bus_stop
@@ -49,7 +49,7 @@ class CirculatorController < ApplicationController
     end
 
     def strong_params
-        params.permit(:stopId, :routeId)
+        params.permit(:stopId, :r)
     end
 
 end
