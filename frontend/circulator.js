@@ -91,8 +91,7 @@ function listCirculatorRouteStops(event, stops, directions) {
                 if (data.error) {
                     displayError(data.error)
                 } else {
-                    const mainContainer = clearAndReturnNotification()
-                    mainContainer.innerHTML = ""
+                    clearAndReturnNotification()
                     getCirculatorBuses(data.body.predictions, stopObj.stopId)
                 }
             }) 

@@ -18,6 +18,9 @@ function buildHeader(stopId, searchCode, agency) {
     favoriteHeart.dataset.stop = searchCode || stopId
     favoriteHeart.dataset.description = stopId
     favoriteHeart.dataset.stopType = searchCode ? 'train' : 'bus'
+    if (favoriteHeart.dataset.stopType === 'bus' && agency === 'circulator') {
+        favoriteHeart.dataset.stopType = 'circulator'
+    }
     favoriteHeart.addEventListener('click', addFavorite)
     
     let refresh 

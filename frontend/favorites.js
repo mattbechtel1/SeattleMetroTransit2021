@@ -50,31 +50,46 @@ function addFavorite(e) {
         stopDesc.id = `favorite-${fav.id}`
         stopNum.append(stopBox, stopDesc)
 
-        if (fav.transit_type === 'bus') {
-            stopNum.addEventListener('click', (e) => {
-                loaderNotification(`Getting the schedule for ${fav.description}`)
-                
-                fetch(`${baseUrl}/metro/busstop/?stopId=${fav.lookup}`)
-                .then(response => response.json())
-                .then(data => {
-                    clearAndReturnNotification()
-                    checkForBuses(data.stop, fav.lookup)
+        switch(fav.transit_type) {
+            case 'bus':
+                stopNum.addEventListener('click', (e) => {
+                    loaderNotification(`Getting the schedule for ${fav.description}`)
+                    
+                    fetch(`${baseUrl}/metro/busstop/${fav.lookup}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        clearAndReturnNotification()
+                        checkForBuses(data.stop, fav.lookup)
+                    })
+                    .catch(displayError)
                 })
-                .catch(displayError)
-            })
-        } else {
-            stopNum.addEventListener('click', (e) => {
+                break
+            case 'train':
+                stopNum.addEventListener('click', (e) => {
 
-                loaderNotification(`Getting the schedule for ${fav.description}`)
-                
-                fetch(`${baseUrl}/metro/station/${fav.lookup}`)
-                .then(response => response.json())
-                .then(data => {
-                    clearAndReturnNotification()
-                    displayTrains(data.Trains, fav.description, fav.lookup)
+                    loaderNotification(`Getting the schedule for ${fav.description}`)
+                    
+                    fetch(`${baseUrl}/metro/station/${fav.lookup}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        clearAndReturnNotification()
+                        displayTrains(data.Trains, fav.description, fav.lookup)
+                    })
+                    .catch(displayError)
                 })
-                .catch(displayError)
-            })
+                break
+            case 'circulator':
+                stopNum.addEventListener('click', (e) => {
+                    loaderNotification(`Getting the schedule for ${fav.description}`)
+
+                    fetch(`${baseUrl}/circulator/busstop/${fav.lookup}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        clearAndReturnNotification()
+                        getCirculatorBuses(data.body.predictions, fav.lookup)
+                    })
+                })
+                break
         }
             
         const editFigure = document.createElement('a')
