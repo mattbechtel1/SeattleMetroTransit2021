@@ -34,8 +34,6 @@ function listStations(stations) {
         stations = reorderStations(stations, 'Lon')
     }
 
-    stations = reorderStations(stations)
-
     const mainContainer = clearAndReturnMain()
 
     const form = buildDropDownForm(stations, function(station) {
