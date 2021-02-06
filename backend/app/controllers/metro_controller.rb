@@ -53,18 +53,31 @@ class MetroController < ApplicationController
   end
 
   def stations
-    response = fetch_data(STATIONS_URL, nil)
+    def sorted_json_response_from_wmata
+      # Fetches station list from wamta and sorts accordingly
+      response = fetch_data(STATIONS_URL, nil)
+      response = JSON.parse(response)
+      if params[:Linecode]
+        response["Stations"].sort_by { |station| station["Lon"] }.to_json
+      else
+        response["Stations"].sort_by { |station| station["Name"] }.to_json
+      end
+    end
+
 
     if params[:Linecode]
       unless Redis.current.exists?("#{params[:Linecode]}-stations")
-        Redis.current.set("#{params[:Linecode]}-stations", response, {ex: ONE_WEEK})
+        Redis.current.set("#{params[:Linecode]}-stations", sorted_json_response_from_wmata, {ex: ONE_WEEK})
       end
 
-      render json: { :alerts => Redis.current.lrange("alert-#{COLOR_DICT[params[:Linecode]]}", 0, -1), :stations => JSON.parse(Redis.current.get("#{params[:Linecode]}-stations"))}.to_json
+      render json: { 
+        :alerts => Redis.current.lrange("alert-#{COLOR_DICT[params[:Linecode]]}", 0, -1), 
+        :stations => JSON.parse(Redis.current.get("#{params[:Linecode]}-stations"))
+      }.to_json
     
     else
       unless Redis.current.exists?('allStations')
-        Redis.current.set('allStations', response, {ex: ONE_WEEK})
+        Redis.current.set('allStations', sorted_json_response_from_wmata, {ex: ONE_WEEK})
       end
 
       render json: Redis.current.get('allStations')

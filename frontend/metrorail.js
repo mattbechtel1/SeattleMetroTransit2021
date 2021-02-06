@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch(`${baseUrl}/metro/stations`)
         .then(response => response.json())
         .then(data => {
-            listStations(data.Stations)
+            listStations(data)
             clearAndReturnNotification()
         })
         .catch(displayError)
@@ -28,14 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
 })
 
 function listStations(stations) {
-    if (stations.length > 40) {
-        stations = reorderStations(stations, 'Name')
-    } else {
-        stations = reorderStations(stations, 'Lon')
-    }
-
     const mainContainer = clearAndReturnMain()
-
     const form = buildDropDownForm(stations, function(station) {
         const option = document.createElement('option')
         option.value = [station.Code, station.Name]
@@ -59,12 +52,6 @@ function listStations(stations) {
     })
 
     mainContainer.appendChild(form)
-}
-
-function reorderStations(stationsList, key) {
-    return stationsList.sort(function(a, b) {
-        return (a[key] < b[key]) ? 1 : -1
-    })
 }
 
 function displayLineSearch(lines) {
@@ -92,7 +79,7 @@ function lineSearch(event) {
     .then(response => response.json())
     .then(data => {
         loaderNotification(...data.alerts)
-        listStations(data.stations.Stations)
+        listStations(data.stations)
     })
     .catch(displayError)
 }
