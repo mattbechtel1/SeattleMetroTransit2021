@@ -35,6 +35,8 @@ gem 'jwt'
 gem 'protobuf'
 gem 'gtfs-realtime-bindings'
 
+gem 'rubyzip'
+
 # Cron jobs
 gem 'whenever', require: false
 
