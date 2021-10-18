@@ -29,6 +29,7 @@ namespace :download_gtfs_feed do
     task :parse_files => [:environment] do 
         agency_copy
         fare_attributues_copy
+        routes_copy
     end
 
     task :cleanup do
@@ -51,7 +52,6 @@ def agency_copy
     }
 end
 
-
 def fare_attributues_copy
     FareAttribute.delete_all
     FareAttribute.copy_from "#{EXTRACTED_LOCATION}/fare_attributes.txt", :map => {
@@ -64,6 +64,22 @@ def fare_attributues_copy
         'payment_method' => 'payment_method',
         'transfers' => 'transfers',
         'transfer_duration' => 'transfer_duration',
+        :null => '',
+    }
+end
+
+def routes_copy
+    Route.delete_all
+    Route.copy_from "#{EXTRACTED_LOCATION}/routes.txt", :map => {
+        'route_id' => 'id',
+        'agency_id' => 'agency_id',
+        'route_short_name' => 'short_name',
+        'route_long_name' => 'long_name',
+        'route_desc' => 'description',
+        'route_type' => 'route_type',
+        'route_url' => 'url',
+        'route_color' => 'color',
+        'route_text_color' => 'text_color',
         :null => '',
     }
 end
