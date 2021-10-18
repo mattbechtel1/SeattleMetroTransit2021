@@ -1,0 +1,21 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  agency: one
+  fare_period_id: 1
+  price: 1.5
+  descriptions: MyString
+  currency_type: MyString
+  payment_method: 1
+  transfers: 1
+  transfer_duration: 1
+
+two:
+  agency: two
+  fare_period_id: 1
+  price: 1.5
+  descriptions: MyString
+  currency_type: MyString
+  payment_method: 1
+  transfers: 1
+  transfer_duration: 1

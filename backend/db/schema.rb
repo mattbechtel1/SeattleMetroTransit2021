@@ -10,10 +10,31 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_03_21_014553) do
+ActiveRecord::Schema.define(version: 2021_10_18_010921) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "agencies", force: :cascade do |t|
+    t.string "name"
+    t.string "url"
+    t.string "timezone"
+    t.string "language"
+    t.string "phone"
+    t.string "fare_url"
+  end
+
+  create_table "fare_attributes", force: :cascade do |t|
+    t.bigint "agency_id", null: false
+    t.integer "fare_period_id"
+    t.float "price"
+    t.string "descriptions"
+    t.string "currency_type"
+    t.integer "payment_method"
+    t.integer "transfers"
+    t.integer "transfer_duration"
+    t.index ["agency_id"], name: "index_fare_attributes_on_agency_id"
+  end
 
   create_table "favorites", force: :cascade do |t|
     t.string "description"
@@ -34,5 +55,6 @@ ActiveRecord::Schema.define(version: 2020_03_21_014553) do
     t.datetime "updated_at", precision: 6, null: false
   end
 
+  add_foreign_key "fare_attributes", "agencies"
   add_foreign_key "favorites", "users"
 end
