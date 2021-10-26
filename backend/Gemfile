@@ -41,7 +41,7 @@ gem 'rubyzip'
 gem 'whenever', require: false
 
 # Postgres COPY support
-gem 'postgres-copy'
+gem 'postgres-copy', git: 'https://github.com/diogob/postgres-copy'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console

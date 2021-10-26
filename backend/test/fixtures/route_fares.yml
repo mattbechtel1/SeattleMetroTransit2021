@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  fare_attribute: one
+  route: one
+  origin_id: 1
+  destination_id: 1
+  contains_id: 1
+
+two:
+  fare_attribute: two
+  route: two
+  origin_id: 1
+  destination_id: 1
+  contains_id: 1

@@ -30,11 +30,22 @@ namespace :download_gtfs_feed do
         agency_copy
         fare_attributues_copy
         routes_copy
+        fare_rules_copy
     end
 
     task :cleanup do
         FileUtils.rm_rf(EXTRACTED_LOCATION) if File.directory?(EXTRACTED_LOCATION)
         File.delete(ZIP_LOCATION) if File.exist?(ZIP_LOCATION)
+    end
+end
+
+namespace :update_gtfs_data do
+    desc "This rebuilds the base data from GTFS and cleans up the files"
+    task :update_all => [:environment] do
+        Rake::Task["download_gtfs_feed:download_file"].execute
+        Rake::Task["download_gtfs_feed:unzip_feed"].execute
+        Rake::Task["download_gtfs_feed:parse_files"].execute
+        Rake::Task["download_gtfs_feed:cleanup"].execute
     end
 end
 
@@ -49,7 +60,7 @@ def agency_copy
         'agency_phone' => 'phone',
         'agency_fare_url' => 'fare_url',
         :null => '',
-    }
+    }, encoding: 'bom|utf-8'
 end
 
 def fare_attributues_copy
@@ -65,7 +76,7 @@ def fare_attributues_copy
         'transfers' => 'transfers',
         'transfer_duration' => 'transfer_duration',
         :null => '',
-    }
+    }, encoding: 'bom|utf-8'
 end
 
 def routes_copy
@@ -81,5 +92,16 @@ def routes_copy
         'route_color' => 'color',
         'route_text_color' => 'text_color',
         :null => '',
-    }
+    }, encoding: 'bom|utf-8'
+end
+
+def fare_rules_copy
+    RouteFare.delete_all
+    RouteFare.copy_from "#{EXTRACTED_LOCATION}/fare_rules.txt", :map => {
+        'destination_id' => 'destination_id',
+        'contains_id' => 'contains_id',
+        'origin_id' => 'origin_id',
+        'fare_id' => 'fare_attribute_id',
+        'route_id' => 'route_id',
+    }, encoding: "bom|utf-8"
 end

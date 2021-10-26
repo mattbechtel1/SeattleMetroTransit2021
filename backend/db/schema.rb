@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_10_18_013643) do
+ActiveRecord::Schema.define(version: 2021_10_21_032321) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -48,6 +48,16 @@ ActiveRecord::Schema.define(version: 2021_10_18_013643) do
     t.index ["user_id"], name: "index_favorites_on_user_id"
   end
 
+  create_table "route_fares", id: false, force: :cascade do |t|
+    t.bigint "fare_attribute_id", null: false
+    t.bigint "route_id", null: false
+    t.integer "origin_id"
+    t.integer "destination_id"
+    t.integer "contains_id"
+    t.index ["fare_attribute_id"], name: "index_route_fares_on_fare_attribute_id"
+    t.index ["route_id"], name: "index_route_fares_on_route_id"
+  end
+
   create_table "routes", force: :cascade do |t|
     t.bigint "agency_id", null: false
     t.string "short_name"
@@ -69,5 +79,7 @@ ActiveRecord::Schema.define(version: 2021_10_18_013643) do
 
   add_foreign_key "fare_attributes", "agencies", on_delete: :cascade
   add_foreign_key "favorites", "users"
+  add_foreign_key "route_fares", "fare_attributes", on_delete: :cascade
+  add_foreign_key "route_fares", "routes", on_delete: :cascade
   add_foreign_key "routes", "agencies", on_delete: :cascade
 end
