@@ -31,6 +31,7 @@ namespace :download_gtfs_feed do
         fare_attributues_copy
         routes_copy
         fare_rules_copy
+        trips_copy
     end
 
     task :cleanup do
@@ -104,4 +105,20 @@ def fare_rules_copy
         'fare_id' => 'fare_attribute_id',
         'route_id' => 'route_id',
     }, encoding: "bom|utf-8"
+end
+
+def trips_copy
+    Trip.delete_all
+    Trip.copy_from "#{EXTRACTED_LOCATION}/trips.txt", :map => {
+        'route_id' => 'route_id',
+        'service_id' => 'service_id',
+        'trip_id' => 'id',
+        'trip_headsign' => 'headsign',
+        'trip_short_name' => 'short_name',
+        'direction_id' => 'direction_id',
+        'block_id' => 'block_id',
+        'shape_id' => 'shape_id',
+        'peak_flag' => 'peak_flag',
+        'fare_id' => 'fare_attribute_id',
+    }, encoding: 'bom|utf-8'
 end
