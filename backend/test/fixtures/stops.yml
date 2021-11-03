@@ -1,0 +1,25 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  code: 1
+  name: MyString
+  description: MyString
+  latitude: 1.5
+  longitude: 1.5
+  zone_id: 
+  url: MyString
+  location_type: 1
+  stop: one
+  timezone: MyString
+
+two:
+  code: 1
+  name: MyString
+  description: MyString
+  latitude: 1.5
+  longitude: 1.5
+  zone_id: 
+  url: MyString
+  location_type: 1
+  stop: two
+  timezone: MyString

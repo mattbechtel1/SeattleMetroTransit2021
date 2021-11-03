@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_10_26_035134) do
+ActiveRecord::Schema.define(version: 2021_11_03_031934) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -70,6 +70,20 @@ ActiveRecord::Schema.define(version: 2021_10_26_035134) do
     t.index ["agency_id"], name: "index_routes_on_agency_id"
   end
 
+  create_table "stops", force: :cascade do |t|
+    t.integer "code"
+    t.string "name"
+    t.string "description"
+    t.float "latitude"
+    t.float "longitude"
+    t.integer "zone_id"
+    t.string "url"
+    t.integer "location_type"
+    t.bigint "stop_id"
+    t.string "timezone"
+    t.index ["stop_id"], name: "index_stops_on_stop_id"
+  end
+
   create_table "trips", force: :cascade do |t|
     t.bigint "route_id", null: false
     t.integer "service_id"
@@ -96,6 +110,7 @@ ActiveRecord::Schema.define(version: 2021_10_26_035134) do
   add_foreign_key "route_fares", "fare_attributes", on_delete: :cascade
   add_foreign_key "route_fares", "routes", on_delete: :cascade
   add_foreign_key "routes", "agencies", on_delete: :cascade
-  add_foreign_key "trips", "fare_attributes"
-  add_foreign_key "trips", "routes"
+  add_foreign_key "stops", "stops", on_delete: :cascade
+  add_foreign_key "trips", "fare_attributes", on_delete: :cascade
+  add_foreign_key "trips", "routes", on_delete: :cascade
 end

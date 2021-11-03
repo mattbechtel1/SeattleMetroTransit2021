@@ -32,6 +32,7 @@ namespace :download_gtfs_feed do
         routes_copy
         fare_rules_copy
         trips_copy
+        stops_copy
     end
 
     task :cleanup do
@@ -120,5 +121,22 @@ def trips_copy
         'shape_id' => 'shape_id',
         'peak_flag' => 'peak_flag',
         'fare_id' => 'fare_attribute_id',
+    }, encoding: 'bom|utf-8'
+end
+
+def stops_copy
+    Stop.delete_all
+    Stop.copy_from "#{EXTRACTED_LOCATION}/stops.txt", :map => {
+        'stop_id' => 'id',
+        'stop_code' => 'code',
+        'stop_name' => 'name',
+        'stop_desc' => 'description',
+        'stop_lat' => 'latitude',
+        'stop_lon' => 'longitude',
+        'zone_id' => 'zone_id',
+        'stop_url' => 'url',
+        'location_type' => 'location_type',
+        'parent_station' => 'stop_id',
+        'stop_timezone' => 'timezone'
     }, encoding: 'bom|utf-8'
 end
