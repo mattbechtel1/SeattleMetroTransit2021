@@ -33,6 +33,7 @@ namespace :download_gtfs_feed do
         fare_rules_copy
         trips_copy
         stops_copy
+        stoptimes_copy
     end
 
     task :cleanup do
@@ -44,6 +45,7 @@ end
 namespace :update_gtfs_data do
     desc "This rebuilds the base data from GTFS and cleans up the files"
     task :update_all => [:environment] do
+        Rake::Task["download_gtfs_feed:cleanup"].execute
         Rake::Task["download_gtfs_feed:download_file"].execute
         Rake::Task["download_gtfs_feed:unzip_feed"].execute
         Rake::Task["download_gtfs_feed:parse_files"].execute
@@ -138,5 +140,21 @@ def stops_copy
         'location_type' => 'location_type',
         'parent_station' => 'stop_id',
         'stop_timezone' => 'timezone'
+    }, encoding: 'bom|utf-8'
+end
+
+def stoptimes_copy
+    Stoptime.delete_all
+    Stoptime.copy_from  "#{EXTRACTED_LOCATION}/stop_times.txt", :map => {
+        'trip_id' => 'trip_id',
+        'arrival_time' => 'arrival_time',
+        'departure_time' => 'departure_time',
+        'stop_id' => 'stop_id',
+        'stop_sequence' => 'sequence',
+        'stop_headsign' => 'headsign',
+        'pickup_type' => 'pickup_type',
+        'drop_off_type' => 'dropoff_type',
+        'shape_dist_traveled' => 'shape_distance_traveled',
+        'timepoint' => 'timepoint'
     }, encoding: 'bom|utf-8'
 end

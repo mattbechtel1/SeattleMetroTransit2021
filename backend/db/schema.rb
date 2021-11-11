@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_11_03_031934) do
+ActiveRecord::Schema.define(version: 2021_11_11_051221) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -84,6 +84,21 @@ ActiveRecord::Schema.define(version: 2021_11_03_031934) do
     t.index ["stop_id"], name: "index_stops_on_stop_id"
   end
 
+  create_table "stoptimes", force: :cascade do |t|
+    t.bigint "trip_id", null: false
+    t.string "arrival_time"
+    t.string "departure_time"
+    t.bigint "stop_id", null: false
+    t.integer "sequence"
+    t.string "headsign"
+    t.integer "pickup_type"
+    t.integer "dropoff_type"
+    t.float "shape_distance_traveled"
+    t.integer "timepoint"
+    t.index ["stop_id"], name: "index_stoptimes_on_stop_id"
+    t.index ["trip_id"], name: "index_stoptimes_on_trip_id"
+  end
+
   create_table "trips", force: :cascade do |t|
     t.bigint "route_id", null: false
     t.integer "service_id"
@@ -111,6 +126,8 @@ ActiveRecord::Schema.define(version: 2021_11_03_031934) do
   add_foreign_key "route_fares", "routes", on_delete: :cascade
   add_foreign_key "routes", "agencies", on_delete: :cascade
   add_foreign_key "stops", "stops", on_delete: :cascade
+  add_foreign_key "stoptimes", "stops", on_delete: :cascade
+  add_foreign_key "stoptimes", "trips", on_delete: :cascade
   add_foreign_key "trips", "fare_attributes", on_delete: :cascade
   add_foreign_key "trips", "routes", on_delete: :cascade
 end

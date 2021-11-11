@@ -3,4 +3,5 @@ class Agency < ApplicationRecord
     has_many :fares, class_name: "FareAttribute"
     has_many :routes
     has_many :trips, through: :routes
+    has_many :stops, through: :trips
 end

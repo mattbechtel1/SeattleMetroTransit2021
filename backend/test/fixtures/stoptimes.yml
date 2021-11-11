@@ -1,0 +1,25 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  trip: one
+  arrival_time: 2021-11-07 18:02:44
+  departure_time: 2021-11-07 18:02:44
+  stop: one
+  sequence: 1
+  headsign: MyString
+  pickup_type: 1
+  dropoff_type: 1
+  shape_distrance_traveled: 1.5
+  timepoint: 1
+
+two:
+  trip: two
+  arrival_time: 2021-11-07 18:02:44
+  departure_time: 2021-11-07 18:02:44
+  stop: two
+  sequence: 1
+  headsign: MyString
+  pickup_type: 1
+  dropoff_type: 1
+  shape_distrance_traveled: 1.5
+  timepoint: 1
