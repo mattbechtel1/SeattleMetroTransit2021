@@ -34,13 +34,12 @@ class MetroController < ApplicationController
 
   def bus_stop
     unless Redis.current.exists?("stop-#{params[:StopId]}")
-      response = fetch_data(BUS_PREDICTIONS_URL, nil)
-      Redis.current.set("stop-#{params[:StopId]}", response, {ex: QUARTER_MINUTE})
+      response = Stop.find(params[:StopId])
+      stop = StopSerializer.new(response)
+      Redis.current.set("stop-#{params[:StopId]}", stop.to_serialized_json, {ex: TEN_MINUTES})
     end
 
-    render json: { 
-      :alerts => Redis.current.lrange("alert-#{params[:routeId]}", 0, -1),
-      :stop => JSON.parse(Redis.current.get("stop-#{params[:StopId]}")) }.to_json
+    render json: Redis.current.get("stop-#{params[:StopId]}")
   end
 
   def bus_route_list
