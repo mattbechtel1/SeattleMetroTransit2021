@@ -1,15 +1,25 @@
 module AssistantUtils
+    WEEK_MAP = {
+        'Sun' => 'sunday',
+        'Mon' => 'monday',
+        'Tue' => 'tuesday',
+        'Wed' => 'wednesday',
+        'Thu' => 'thursday',
+        'Fri' => 'friday',
+        'Sat' => 'saturday',
+        'Sun' => 'sunday'
+    }
+
     def day_of_week
-        {
-            'Sun' => 'sunday',
-            'Mon' => 'monday',
-            'Tue' => 'tuesday',
-            'Wed' => 'wednesday',
-            'Thu' => 'thursday',
-            'Fri' => 'friday',
-            'Sat' => 'saturday',
-            'Sun' => 'sunday'
-        }[Date.today().strftime('%a')]
+        WEEK_MAP[Date.today.strftime('%a')]
+    end
+
+    def adj_day_of_week
+        if Time.now.hour < 4
+            WEEK_MAP[Date.yesterday.strftime('%a')]
+        else
+            day_of_week
+        end
     end
 
 end
