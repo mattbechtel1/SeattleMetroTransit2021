@@ -31,6 +31,7 @@ namespace :download_gtfs_feed do
         fare_attributues_copy
         routes_copy
         fare_rules_copy
+        calendar_copy
         trips_copy
         stops_copy
         stoptimes_copy
@@ -114,7 +115,7 @@ def trips_copy
     Trip.delete_all
     Trip.copy_from "#{EXTRACTED_LOCATION}/trips.txt", :map => {
         'route_id' => 'route_id',
-        'service_id' => 'service_id',
+        'service_id' => 'calendar_id',
         'trip_id' => 'id',
         'trip_headsign' => 'headsign',
         'trip_short_name' => 'short_name',
@@ -156,5 +157,21 @@ def stoptimes_copy
         'drop_off_type' => 'dropoff_type',
         'shape_dist_traveled' => 'shape_distance_traveled',
         'timepoint' => 'timepoint'
+    }, encoding: 'bom|utf-8'
+end
+
+def calendar_copy
+    Calendar.delete_all
+    Calendar.copy_from "#{EXTRACTED_LOCATION}/calendar.txt", :map => {
+        'service_id' => 'id',
+        'monday' => 'monday',
+        'tuesday' => 'tuesday',
+        'wednesday' => 'wednesday',
+        'thursday' => 'thursday',
+        'friday' => 'friday',
+        'saturday' => 'saturday',
+        'sunday' => 'sunday',
+        'start_date' => 'start_date',
+        'end_date' => 'end_date'
     }, encoding: 'bom|utf-8'
 end

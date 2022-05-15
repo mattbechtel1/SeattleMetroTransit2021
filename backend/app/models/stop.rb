@@ -6,15 +6,10 @@ class Stop < ApplicationRecord
   has_many :routes, through: :trips
 
   alias_attribute :StopName, :name
+  alias_attribute :Predictions, :bus_predictions
 
-  def BusPredictions
-    now = Time.new
-    formatted_now = now.strftime("%H:%M:%S")
-    hour = now.hour + 1
-    hour_from_now = (now + 3600).strftime("#{hour.to_s}:%M:%S")
-    self.stoptimes.where(
-      "departure_time >= ? AND departure_time < ?", formatted_now, hour_from_now
-    )
+  def bus_predictions
+    self.stoptimes.buses_next_hour
   end
 
 end

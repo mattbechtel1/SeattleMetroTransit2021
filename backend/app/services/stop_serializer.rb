@@ -4,16 +4,15 @@ class StopSerializer
     end
 
     def to_serialized_json
-        format = { 
+        format = {
             include: {
-                BusPredictions: {
-                    except: [:created_at, :updated_at]
+                Predictions: {
+                    methods: [:TripID, :Minutes, :DirectionText, :DirectionNum, :RouteID],
+                    only: :id
                 }
             },
-            methods: [:StopName],
-            only: [:code]
+            only: []
         }
-        byebug
         @stop.to_json(format)
     end
 end

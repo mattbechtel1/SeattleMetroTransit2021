@@ -2,7 +2,7 @@ class CreateTrips < ActiveRecord::Migration[6.0]
   def change
     create_table :trips do |t|
       t.references :route, null: false, foreign_key: {on_delete: :cascade}
-      t.integer :service_id
+      # t.integer :service_id
       t.string :headsign
       t.string :short_name
       t.integer :direction_id

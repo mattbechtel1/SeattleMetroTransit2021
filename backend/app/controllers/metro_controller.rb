@@ -36,10 +36,10 @@ class MetroController < ApplicationController
     unless Redis.current.exists?("stop-#{params[:StopId]}")
       response = Stop.find(params[:StopId])
       stop = StopSerializer.new(response)
-      Redis.current.set("stop-#{params[:StopId]}", stop.to_serialized_json, {ex: TEN_MINUTES})
+      Redis.current.set("stop-#{params[:StopId]}", stop.to_serialized_json, {ex: QUARTER_MINUTE})
     end
 
-    render json: Redis.current.get("stop-#{params[:StopId]}")
+    render json: {:alerts => [], :stop => JSON.parse(Redis.current.get("stop-#{params[:StopId]}"))}.to_json
   end
 
   def bus_route_list

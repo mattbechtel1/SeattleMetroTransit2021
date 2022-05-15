@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_02_02_055021) do
+ActiveRecord::Schema.define(version: 2022_05_08_074856) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -22,6 +22,18 @@ ActiveRecord::Schema.define(version: 2022_02_02_055021) do
     t.string "language"
     t.string "phone"
     t.string "fare_url"
+  end
+
+  create_table "calendars", force: :cascade do |t|
+    t.boolean "monday"
+    t.boolean "tuesday"
+    t.boolean "wednesday"
+    t.boolean "thursday"
+    t.boolean "friday"
+    t.boolean "saturday"
+    t.boolean "sunday"
+    t.integer "start_date"
+    t.integer "end_date"
   end
 
   create_table "fare_attributes", force: :cascade do |t|
@@ -101,7 +113,6 @@ ActiveRecord::Schema.define(version: 2022_02_02_055021) do
 
   create_table "trips", force: :cascade do |t|
     t.bigint "route_id", null: false
-    t.integer "service_id"
     t.string "headsign"
     t.string "short_name"
     t.integer "direction_id"
@@ -109,6 +120,8 @@ ActiveRecord::Schema.define(version: 2022_02_02_055021) do
     t.integer "shape_id"
     t.integer "peak_flag"
     t.bigint "fare_attribute_id", null: false
+    t.bigint "calendar_id"
+    t.index ["calendar_id"], name: "index_trips_on_calendar_id"
     t.index ["fare_attribute_id"], name: "index_trips_on_fare_attribute_id"
     t.index ["route_id"], name: "index_trips_on_route_id"
   end
