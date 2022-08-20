@@ -14,9 +14,7 @@ class MetroController < ApplicationController
   }
 
   BUS_ROUTE_SCHEDULE_URL = 'https://api.wmata.com/Bus.svc/json/jRouteSchedule'
-  BUS_ROUTES_URL = 'https://api.wmata.com/Bus.svc/json/jRoutes'
   BUS_ALERTS_URL = 'https://api.wmata.com/gtfs/bus-gtfsrt-alerts.pb'
-  BUS_PREDICTIONS_URL = 'https://api.wmata.com/NextBusService.svc/json/jPredictions/'
 
   STATIONS_URL = 'https://api.wmata.com/Rail.svc/json/jStations'
   RAIL_LINES_URL = 'https://api.wmata.com/Rail.svc/json/jLines'
@@ -24,7 +22,6 @@ class MetroController < ApplicationController
   STATION_PREDICTIONS_URL = 'https://api.wmata.com/StationPrediction.svc/json/GetPrediction'
 
   def bus_stops
-    byebug    
     unless $redis.exists?("busstops-#{params[:RouteID]}")
       response = fetch_data(BUS_ROUTE_SCHEDULE_URL, nil)
       $redis.set("busstops-#{params["RouteID"]}", response, {ex: ONE_WEEK})
