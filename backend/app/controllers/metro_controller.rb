@@ -23,32 +23,32 @@ class MetroController < ApplicationController
   RAIL_ALERTS_URL = 'https://api.wmata.com/gtfs/rail-gtfsrt-alerts.pb'
   STATION_PREDICTIONS_URL = 'https://api.wmata.com/StationPrediction.svc/json/GetPrediction'
 
-  def bus_stops    
-    unless Redis.current.exists?("busstops-#{params[:RouteID]}")
+  def bus_stops
+    byebug    
+    unless $redis.exists?("busstops-#{params[:RouteID]}")
       response = fetch_data(BUS_ROUTE_SCHEDULE_URL, nil)
-      Redis.current.set("busstops-#{params["RouteID"]}", response, {ex: ONE_WEEK})
+      $redis.set("busstops-#{params["RouteID"]}", response, {ex: ONE_WEEK})
     end
 
-    render json: {:alerts => Redis.current.lrange("alert-#{params[:RouteID]}", 0, -1), :bus => JSON.parse(Redis.current.get("busstops-#{params[:RouteID]}")) }.to_json
+    render json: {:alerts => $redis.lrange("alert-#{params[:RouteID]}", 0, -1), :bus => JSON.parse($redis.get("busstops-#{params[:RouteID]}")) }.to_json
   end
 
   def bus_stop
-    unless Redis.current.exists?("stop-#{params[:StopId]}")
+    unless $redis.exists?("stop-#{params[:StopId]}")
       response = Stop.find(params[:StopId])
       stop = StopSerializer.new(response)
-      Redis.current.set("stop-#{params[:StopId]}", stop.to_serialized_json, {ex: QUARTER_MINUTE})
+      $redis.set("stop-#{params[:StopId]}", stop.to_serialized_json, {ex: QUARTER_MINUTE})
     end
 
-    render json: {:alerts => [], :stop => JSON.parse(Redis.current.get("stop-#{params[:StopId]}"))}.to_json
+    render json: {:alerts => [], :stop => JSON.parse($redis.get("stop-#{params[:StopId]}"))}.to_json
   end
 
   def bus_route_list
-    unless Redis.current.exists?('allBuses')
-      response = fetch_data(BUS_ROUTES_URL, nil)
-      Redis.current.set('allBuses', response, {ex: ONE_WEEK})
+    unless $redis.exists?('allBuses')
+      response = Route.all.map { |r| RouteSerializer.new(r).to_serialized_json }
+      $redis.set('allBuses', response.to_json, {ex: QUARTER_MINUTE})
     end
-    
-    render json: Redis.current.get('allBuses')
+    render json: {:Routes => JSON.parse($redis.get('allBuses'))}.to_json
   end
 
   def stations
@@ -65,53 +65,53 @@ class MetroController < ApplicationController
 
 
     if params[:Linecode]
-      unless Redis.current.exists?("#{params[:Linecode]}-stations")
-        Redis.current.set("#{params[:Linecode]}-stations", sorted_json_response_from_wmata, {ex: ONE_WEEK})
+      unless $redis.exists?("#{params[:Linecode]}-stations")
+        $redis.set("#{params[:Linecode]}-stations", sorted_json_response_from_wmata, {ex: ONE_WEEK})
       end
 
       render json: { 
-        :alerts => Redis.current.lrange("alert-#{COLOR_DICT[params[:Linecode]]}", 0, -1), 
-        :stations => JSON.parse(Redis.current.get("#{params[:Linecode]}-stations"))
+        :alerts => $redis.lrange("alert-#{COLOR_DICT[params[:Linecode]]}", 0, -1), 
+        :stations => JSON.parse($redis.get("#{params[:Linecode]}-stations"))
       }.to_json
     
     else
-      unless Redis.current.exists?('allStations')
-        Redis.current.set('allStations', sorted_json_response_from_wmata, {ex: ONE_WEEK})
+      unless $redis.exists?('allStations')
+        $redis.set('allStations', sorted_json_response_from_wmata, {ex: ONE_WEEK})
       end
 
-      render json: Redis.current.get('allStations')
+      render json: $redis.get('allStations')
     end
   end
 
   def station
-    unless Redis.current.exists?("station-#{params[:station_code]}")
+    unless $redis.exists?("station-#{params[:station_code]}")
       response = fetch_data("#{STATION_PREDICTIONS_URL}/#{params[:station_code]}", nil)
-      Redis.current.set("station-#{params[:station_code]}", response, {ex: THIRD_MINUTE})
+      $redis.set("station-#{params[:station_code]}", response, {ex: THIRD_MINUTE})
     end
 
-    render json: Redis.current.get("station-#{params[:station_code]}")
+    render json: $redis.get("station-#{params[:station_code]}")
   end
 
   def lines
-    unless Redis.current.exists?("lines")
+    unless $redis.exists?("lines")
       response = fetch_data(RAIL_LINES_URL, nil)
-      Redis.current.set('lines', response)
+      $redis.set('lines', response)
     end
 
-    render json: Redis.current.get('lines')
+    render json: $redis.get('lines')
   end
 
 
   # alerts does not return data to the frontend
   def alerts
-    unless Redis.current.get('alert-times')
+    unless $redis.get('alert-times')
       bus_response = fetch_data(BUS_ALERTS_URL, "{body}")
       bus_feed = Transit_realtime::FeedMessage.decode(bus_response)
       
       bus_feed.entity.filter { |entity| entity.id[0] == "1" }.each do |entity|
         entity.alert.informed_entity.each do |bus|
-          Redis.current.rpush("alert-#{bus.route_id}", entity.alert.header_text.translation[0].text)
-          Redis.current.expire("alert-#{bus.route_id}", TEN_MINUTES)
+          $redis.rpush("alert-#{bus.route_id}", entity.alert.header_text.translation[0].text)
+          $redis.expire("alert-#{bus.route_id}", TEN_MINUTES)
         end
       end
 
@@ -119,12 +119,12 @@ class MetroController < ApplicationController
       train_feed = Transit_realtime::FeedMessage.decode(train_response)
       train_feed.entity.each do |entity|
         entity.alert.informed_entity.each do |alert|
-          Redis.current.rpush("alert-#{alert.route_id}", entity.alert.description_text.translation[0].text)
-          Redis.current.expire("alert-#{alert.route_id}", TEN_MINUTES)
+          $redis.rpush("alert-#{alert.route_id}", entity.alert.description_text.translation[0].text)
+          $redis.expire("alert-#{alert.route_id}", TEN_MINUTES)
         end
       end
 
-      Redis.current.set('alert-times', true, ex: TEN_MINUTES)
+      $redis.set('alert-times', true, ex: TEN_MINUTES)
       render json: bus_feed
     end
   end
