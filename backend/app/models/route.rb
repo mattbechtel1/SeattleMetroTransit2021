@@ -6,9 +6,5 @@ class Route < ApplicationRecord
   has_many :fares, through: :route_fares, source: :fare_attribute
 
   alias_attribute :LineDescription, :description
-
-  def RouteID
-    id.to_s
-  end
-
+  alias_attribute :RouteID, :short_name
 end

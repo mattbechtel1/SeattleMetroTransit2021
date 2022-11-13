@@ -23,8 +23,8 @@ class MetroController < ApplicationController
 
   def bus_stops
     unless $redis.exists?("busstops-#{params[:RouteID]}")
-      response = fetch_data(BUS_ROUTE_SCHEDULE_URL, nil)
-      $redis.set("busstops-#{params["RouteID"]}", response, {ex: ONE_WEEK})
+      response = Trip.by_route(params[:RouteID]).map {|t| TripSerializer.new(t).to_serialized_json}
+      $redis.set("busstops-#{params[:RouteID]}", response.to_json, {ex: QUARTER_MINUTE})
     end
 
     render json: {:alerts => $redis.lrange("alert-#{params[:RouteID]}", 0, -1), :bus => JSON.parse($redis.get("busstops-#{params[:RouteID]}")) }.to_json
@@ -32,18 +32,30 @@ class MetroController < ApplicationController
 
   def bus_stop
     unless $redis.exists?("stop-#{params[:StopId]}")
-      response = Stop.find(params[:StopId])
-      stop = StopSerializer.new(response)
-      $redis.set("stop-#{params[:StopId]}", stop.to_serialized_json, {ex: QUARTER_MINUTE})
+      begin
+        response = Stop.find(params[:StopId])
+      rescue ActiveRecord::RecordNotFound
+        error_message = "Stop not found"
+        $redis.set("stoperror-#{params[:StopId]}", error_message, {ex: QUARTER_MINUTE})
+      else
+        stop = StopSerializer.new(response)
+        $redis.set("stop-#{params[:StopId]}", stop.to_serialized_json, {ex: QUARTER_MINUTE})
+      end
     end
 
-    render json: {:alerts => [], :stop => JSON.parse($redis.get("stop-#{params[:StopId]}"))}.to_json
+    semi_stop = $redis.get("stop-#{params[:StopId]}")
+    if semi_stop
+      return_stop = JSON.parse(semi_stop)
+    else
+      return_stop = nil
+    end
+    render json: {:Message => $redis.get("stoperror-#{params[:StopId]}"), :alerts => [], :stop => return_stop}.to_json
   end
 
   def bus_route_list
     unless $redis.exists?('allBuses')
       response = Route.all.map { |r| RouteSerializer.new(r).to_serialized_json }
-      $redis.set('allBuses', response.to_json, {ex: QUARTER_MINUTE})
+      $redis.set('allBuses', response.to_json, {ex: ONE_WEEK})
     end
     render json: {:Routes => JSON.parse($redis.get('allBuses'))}.to_json
   end
