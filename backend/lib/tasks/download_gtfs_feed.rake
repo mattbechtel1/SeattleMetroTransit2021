@@ -57,7 +57,7 @@ end
 def agency_copy
     Agency.delete_all
     Agency.copy_from "#{EXTRACTED_LOCATION}/agency.txt", :map => {
-        'agency_id' => 'id',
+        'agency_id' => 'agency_code',
         'agency_name' => 'name',
         'agency_url' => 'url',
         'agency_timezone' => 'timezone',

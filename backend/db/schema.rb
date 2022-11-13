@@ -15,13 +15,15 @@ ActiveRecord::Schema.define(version: 2022_05_08_074856) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
-  create_table "agencies", force: :cascade do |t|
+  create_table "agencies", id: false, force: :cascade do |t|
+    t.string "agency_code"
     t.string "name"
     t.string "url"
     t.string "timezone"
     t.string "language"
     t.string "phone"
     t.string "fare_url"
+    t.index ["agency_code"], name: "index_agencies_on_agency_code", unique: true
   end
 
   create_table "calendars", force: :cascade do |t|
@@ -37,7 +39,7 @@ ActiveRecord::Schema.define(version: 2022_05_08_074856) do
   end
 
   create_table "fare_attributes", force: :cascade do |t|
-    t.bigint "agency_id", null: false
+    t.string "agency_id", null: false
     t.integer "fare_period_id"
     t.float "price"
     t.string "descriptions"
@@ -71,7 +73,7 @@ ActiveRecord::Schema.define(version: 2022_05_08_074856) do
   end
 
   create_table "routes", force: :cascade do |t|
-    t.bigint "agency_id", null: false
+    t.string "agency_id", null: false
     t.string "short_name"
     t.string "long_name"
     t.string "description"
@@ -133,11 +135,11 @@ ActiveRecord::Schema.define(version: 2022_05_08_074856) do
     t.datetime "updated_at", precision: 6, null: false
   end
 
-  add_foreign_key "fare_attributes", "agencies", on_delete: :cascade
+  add_foreign_key "fare_attributes", "agencies", primary_key: "agency_code", on_delete: :cascade
   add_foreign_key "favorites", "users"
   add_foreign_key "route_fares", "fare_attributes", on_delete: :cascade
   add_foreign_key "route_fares", "routes", on_delete: :cascade
-  add_foreign_key "routes", "agencies", on_delete: :cascade
+  add_foreign_key "routes", "agencies", primary_key: "agency_code", on_delete: :cascade
   add_foreign_key "stops", "stops", on_delete: :cascade
   add_foreign_key "stoptimes", "stops", on_delete: :cascade
   add_foreign_key "stoptimes", "trips", on_delete: :cascade
