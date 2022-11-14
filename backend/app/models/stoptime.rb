@@ -10,9 +10,19 @@ class Stoptime < ApplicationRecord
   alias_attribute :DirectionText, :direction_text
   alias_attribute :DirectionNum, :direction_id_string
   alias_attribute :RouteID, :route_short_name
+  alias_attribute :StopName, :stop_name
+  alias_attribute :StopID, :stop_id
 
   def trip_id_string
     self.trip.id.to_s
+  end
+
+  def stop_name
+    self.stop.StopName
+  end
+
+  def stop_id 
+    self.stop.id
   end
 
   def direction_id_string
@@ -24,7 +34,7 @@ class Stoptime < ApplicationRecord
   end
 
   def direction_text
-    ["Outbound", "Inbound"][self.trip.direction_id] + " to " + self.trip.headsign
+    self.trip.directional_text + " to " + self.trip.headsign
   end
 
   def real_departure_time

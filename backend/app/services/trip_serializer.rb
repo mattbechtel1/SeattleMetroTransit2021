@@ -5,8 +5,13 @@ class TripSerializer
 
     def to_serialized_json
         format = {
-            methods: [:direction]
+            methods: [:TripDirectionText, :TripHeadsign],
+            include: {
+                StopTimes: {
+                    methods: [:StopID, :StopName]
+                }
+            }
         }
-        @trip.as_json(format)
+        @trip.to_json(format)
     end
 end

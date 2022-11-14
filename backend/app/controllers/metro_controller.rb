@@ -23,11 +23,19 @@ class MetroController < ApplicationController
 
   def bus_stops
     unless $redis.exists?("busstops-#{params[:RouteID]}")
-      response = Trip.by_route(params[:RouteID]).map {|t| TripSerializer.new(t).to_serialized_json}
-      $redis.set("busstops-#{params[:RouteID]}", response.to_json, {ex: QUARTER_MINUTE})
+      response_direction0 = Trip.by_route_and_direction(params[:RouteID], 0)
+      response_direction1 = Trip.by_route_and_direction(params[:RouteID], 1)
+      $redis.set(
+        "busstops-#{params[:RouteID]}", 
+        DirectionSerializer.new(response_direction0, response_direction1).to_serialized_json, 
+        {ex: QUARTER_MINUTE}
+      )
     end
 
-    render json: {:alerts => $redis.lrange("alert-#{params[:RouteID]}", 0, -1), :bus => JSON.parse($redis.get("busstops-#{params[:RouteID]}")) }.to_json
+    render json: {
+      :alerts => $redis.lrange("alert-#{params[:RouteID]}", 0, -1), 
+      :bus => JSON.parse($redis.get("busstops-#{params[:RouteID]}")) 
+    }.to_json
   end
 
   def bus_stop
