@@ -7,4 +7,8 @@ class Route < ApplicationRecord
 
   alias_attribute :LineDescription, :description
   alias_attribute :RouteID, :short_name
+
+  def self.ordered_routes
+    self.all.order(:short_name)
+  end
 end

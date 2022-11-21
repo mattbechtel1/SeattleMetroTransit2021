@@ -70,7 +70,8 @@ class MetroController < ApplicationController
 
   def bus_route_list
     unless $redis.exists?('allBuses')
-      response = Route.all.map { |r| RouteSerializer.new(r).to_serialized_json }
+      response = Route.ordered_routes
+      response.map { |r| RouteSerializer.new(r).to_serialized_json }
       $redis.set('allBuses', response.to_json, {ex: ONE_WEEK})
     end
     render json: {:Routes => JSON.parse($redis.get('allBuses'))}.to_json

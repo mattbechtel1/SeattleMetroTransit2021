@@ -4,4 +4,5 @@ class Agency < ApplicationRecord
     has_many :routes
     has_many :trips, through: :routes
     has_many :stops, through: :trips
+    set_primary_key "agency_code"
 end
