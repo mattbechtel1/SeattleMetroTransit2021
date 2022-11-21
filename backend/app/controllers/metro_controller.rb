@@ -22,7 +22,7 @@ class MetroController < ApplicationController
   STATION_PREDICTIONS_URL = 'https://api.wmata.com/StationPrediction.svc/json/GetPrediction'
 
   def bus_stops
-    if params[:RouteID].to_i < 1
+    if params[:RouteID].strip.empty?
       render json: {:bus => {:Message => "Could not parse Route ID"}}, status: 400
       return
     end
@@ -71,8 +71,8 @@ class MetroController < ApplicationController
   def bus_route_list
     unless $redis.exists?('allBuses')
       response = Route.ordered_routes
-      response.map { |r| RouteSerializer.new(r).to_serialized_json }
-      $redis.set('allBuses', response.to_json, {ex: ONE_WEEK})
+      serialized_routes = response.map { |r| RouteSerializer.new(r).to_serialized_json }
+      $redis.set('allBuses', serialized_routes.to_json, {ex: ONE_WEEK})
     end
     render json: {:Routes => JSON.parse($redis.get('allBuses'))}.to_json
   end

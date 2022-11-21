@@ -13,6 +13,10 @@ class Trip < ApplicationRecord
 
 
   def self.by_route_and_direction route_short_name, direction_id
+    if route_short_name.to_i < 1
+      # If route is not a number, assume it is F LINE or f or F format
+      route_short_name = route_short_name[0].upcase + " Line"
+    end
     return Trip.joins(:route).where(routes: {"short_name": route_short_name}, direction_id: direction_id)
   end
 
