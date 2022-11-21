@@ -22,9 +22,17 @@ class MetroController < ApplicationController
   STATION_PREDICTIONS_URL = 'https://api.wmata.com/StationPrediction.svc/json/GetPrediction'
 
   def bus_stops
+    if params[:RouteID].to_i < 1
+      render json: {:bus => {:Message => "Could not parse Route ID"}}, status: 400
+      return
+    end
     unless $redis.exists?("busstops-#{params[:RouteID]}")
       response_direction0 = Trip.by_route_and_direction(params[:RouteID], 0)
       response_direction1 = Trip.by_route_and_direction(params[:RouteID], 1)
+      if response_direction0.empty? && response_direction1.empty?
+        render json: {:bus => {:Message => "Unable to identify route"}}, status: 404 
+        return
+      end
       $redis.set(
         "busstops-#{params[:RouteID]}", 
         DirectionSerializer.new(response_direction0, response_direction1).to_serialized_json, 
