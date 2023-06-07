@@ -10,7 +10,7 @@ namespace :download_gtfs_feed do
     desc "This task downloads the gtfs data"
     task :download_file do
         open(ZIP_LOCATION, 'wb') do |file|
-            file << open(GTFS_FEED_URL).read
+            file << URI.open(GTFS_FEED_URL).read
         end
     end
 
