@@ -2,7 +2,6 @@
 
 one:
   route: one
-  service_id: 1
   headsign: MyString
   short_name: MyString
   direction_id: 1
@@ -13,7 +12,6 @@ one:
 
 two:
   route: two
-  service_id: 1
   headsign: MyString
   short_name: MyString
   direction_id: 1

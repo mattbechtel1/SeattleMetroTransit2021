@@ -1,7 +1,6 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
-  service_id: 1
   monday: false
   tuesday: false
   wednesday: false
@@ -13,7 +12,6 @@ one:
   end_date: 1
 
 two:
-  service_id: 1
   monday: false
   tuesday: false
   wednesday: false
