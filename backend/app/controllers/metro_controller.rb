@@ -33,10 +33,10 @@ class MetroController < ApplicationController
         render json: {:bus => {:Message => "Unable to identify route"}}, status: 404 
         return
       end
-      $redis.set(
+      $redis.setex(
         "busstops-#{params[:RouteID]}", 
-        DirectionSerializer.new(response_direction0, response_direction1).to_serialized_json, 
-        {ex: QUARTER_MINUTE}
+        QUARTER_MINUTE,
+        DirectionSerializer.new(response_direction0, response_direction1).to_serialized_json 
       )
     end
 
@@ -52,10 +52,10 @@ class MetroController < ApplicationController
         response = Stop.find(params[:StopId])
       rescue ActiveRecord::RecordNotFound
         error_message = "Stop not found"
-        $redis.set("stoperror-#{params[:StopId]}", error_message, {ex: QUARTER_MINUTE})
+        $redis.setex("stoperror-#{params[:StopId]}", QUARTER_MINUTE, error_message)
       else
         stop = StopSerializer.new(response)
-        $redis.set("stop-#{params[:StopId]}", stop.to_serialized_json, {ex: QUARTER_MINUTE})
+        $redis.setex("stop-#{params[:StopId]}", QUARTER_MINUTE, stop.to_serialized_json)
       end
     end
 
@@ -72,7 +72,7 @@ class MetroController < ApplicationController
     unless $redis.exists?('allBuses')
       response = Route.ordered_routes
       serialized_routes = response.map { |r| RouteSerializer.new(r).to_serialized_json }
-      $redis.set('allBuses', serialized_routes.to_json, {ex: ONE_WEEK})
+      $redis.setex('allBuses', ONE_WEEK, serialized_routes.to_json)
     end
     render json: {:Routes => JSON.parse($redis.get('allBuses'))}.to_json
   end
@@ -92,7 +92,7 @@ class MetroController < ApplicationController
 
     if params[:Linecode]
       unless $redis.exists?("#{params[:Linecode]}-stations")
-        $redis.set("#{params[:Linecode]}-stations", sorted_json_response_from_wmata, {ex: ONE_WEEK})
+        $redis.setex("#{params[:Linecode]}-stations", ONE_WEEK, sorted_json_response_from_wmata)
       end
 
       render json: { 
@@ -102,7 +102,7 @@ class MetroController < ApplicationController
     
     else
       unless $redis.exists?('allStations')
-        $redis.set('allStations', sorted_json_response_from_wmata, {ex: ONE_WEEK})
+        $redis.setex('allStations', ONE_WEEK, sorted_json_response_from_wmata)
       end
 
       render json: $redis.get('allStations')
@@ -112,7 +112,7 @@ class MetroController < ApplicationController
   def station
     unless $redis.exists?("station-#{params[:station_code]}")
       response = fetch_data("#{STATION_PREDICTIONS_URL}/#{params[:station_code]}", nil)
-      $redis.set("station-#{params[:station_code]}", response, {ex: THIRD_MINUTE})
+      $redis.setex("station-#{params[:station_code]}", THIRD_MINUTE, response)
     end
 
     render json: $redis.get("station-#{params[:station_code]}")
@@ -150,7 +150,7 @@ class MetroController < ApplicationController
         end
       end
 
-      $redis.set('alert-times', true, ex: TEN_MINUTES)
+      $redis.setex('alert-times', TEN_MINUTES, true)
       render json: bus_feed
     end
   end
