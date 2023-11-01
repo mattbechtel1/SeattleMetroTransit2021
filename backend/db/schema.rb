@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_11_21_004221) do
+ActiveRecord::Schema.define(version: 2023_11_01_042637) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -59,6 +59,18 @@ ActiveRecord::Schema.define(version: 2022_11_21_004221) do
     t.string "permanent_desc"
     t.index ["user_id", "lookup"], name: "index_favorites_on_user_id_and_lookup", unique: true
     t.index ["user_id"], name: "index_favorites_on_user_id"
+  end
+
+  create_table "rail_routes", id: false, force: :cascade do |t|
+    t.string "id"
+    t.string "agency_id"
+    t.string "short_name"
+    t.string "long_name"
+    t.string "description"
+    t.integer "route_type"
+    t.string "url"
+    t.string "color"
+    t.string "text_color"
   end
 
   create_table "route_fares", id: false, force: :cascade do |t|
