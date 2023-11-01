@@ -6,7 +6,7 @@ class DirectionSerializer
 
     def to_serialized_json
         {
-            Direction0: @trip_list0.map { |trip| 
+            Direction0: @trip_list0.map { |trip|   # TODO: This is too iterative; simplify
                 JSON.parse(TripSerializer.new(trip).to_serialized_json)
             }, 
             Direction1: @trip_list1.map { |trip| 
