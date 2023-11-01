@@ -57,6 +57,7 @@ namespace :download_gtfs_feed do
         calendar_copy
         trips_copy
         stops_copy
+        stations_copy
         stoptimes_copy
     end
 
@@ -184,6 +185,25 @@ def stops_copy
         'location_type' => 'location_type',
         'parent_station' => 'stop_id',
         'stop_timezone' => 'timezone'
+    }, encoding: 'bom|utf-8'
+end
+
+def stations_copy
+    Station.delete_all
+    Station.copy_from "#{ST_EXTRACTED_LOCATION}/stops.txt", :map => {
+        'stop_id' => 'id',
+        'stop_code' => 'code',
+        'stop_name' => 'name',
+        'stop_desc' => 'description',
+        'stop_lat' => 'latitude',
+        'stop_lon' => 'longitude',
+        'zone_id' => 'zone_id',
+        'stop_url' => 'url',
+        'location_type' => 'location_type',
+        'parent_station' => 'stop_id',
+        'stop_timezone' => 'timezone',
+        'wheelchair_boarding' => 'wheelchair_boarding',
+        'tts_stop_name' => 'full_stop_name'
     }, encoding: 'bom|utf-8'
 end
 

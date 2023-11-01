@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_11_01_042637) do
+ActiveRecord::Schema.define(version: 2023_11_01_052939) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -93,6 +93,21 @@ ActiveRecord::Schema.define(version: 2023_11_01_042637) do
     t.string "color"
     t.string "text_color"
     t.index ["agency_id"], name: "index_routes_on_agency_id"
+  end
+
+  create_table "stations", id: :string, force: :cascade do |t|
+    t.string "code"
+    t.string "name"
+    t.string "description"
+    t.float "latitude"
+    t.float "longitude"
+    t.string "zone_id"
+    t.string "url"
+    t.integer "location_type"
+    t.string "stop_id"
+    t.string "timezone"
+    t.boolean "wheelchair_boarding"
+    t.string "full_stop_name"
   end
 
   create_table "stops", force: :cascade do |t|
