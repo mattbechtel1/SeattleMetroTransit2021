@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_11_01_052939) do
+ActiveRecord::Schema.define(version: 2024_07_02_034445) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -108,6 +108,7 @@ ActiveRecord::Schema.define(version: 2023_11_01_052939) do
     t.string "timezone"
     t.boolean "wheelchair_boarding"
     t.string "full_stop_name"
+    t.string "platform_code"
   end
 
   create_table "stops", force: :cascade do |t|
@@ -121,6 +122,7 @@ ActiveRecord::Schema.define(version: 2023_11_01_052939) do
     t.integer "location_type"
     t.bigint "stop_id"
     t.string "timezone"
+    t.integer "wheelchair_boarding"
     t.index ["stop_id"], name: "index_stops_on_stop_id"
   end
 
@@ -149,6 +151,8 @@ ActiveRecord::Schema.define(version: 2023_11_01_052939) do
     t.integer "peak_flag"
     t.bigint "fare_attribute_id", null: false
     t.bigint "calendar_id"
+    t.boolean "wheelchair_accessible"
+    t.boolean "bikes_allowed"
     t.index ["calendar_id"], name: "index_trips_on_calendar_id"
     t.index ["fare_attribute_id"], name: "index_trips_on_fare_attribute_id"
     t.index ["route_id"], name: "index_trips_on_route_id"

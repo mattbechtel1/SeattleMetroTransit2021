@@ -168,6 +168,8 @@ def trips_copy
         'shape_id' => 'shape_id',
         'peak_flag' => 'peak_flag',
         'fare_id' => 'fare_attribute_id',
+        'wheelchair_accessible' => 'wheelchair_accessible',
+        'wheelchair_boarding' => 'wheelchair_boarding',
     }, encoding: 'bom|utf-8'
 end
 
@@ -203,7 +205,8 @@ def stations_copy
         'parent_station' => 'stop_id',
         'stop_timezone' => 'timezone',
         'wheelchair_boarding' => 'wheelchair_boarding',
-        'tts_stop_name' => 'full_stop_name'
+        'tts_stop_name' => 'full_stop_name',
+        'platform_code' => 'platform_code'
     }, encoding: 'bom|utf-8'
 end
 
