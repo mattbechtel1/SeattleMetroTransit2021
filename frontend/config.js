@@ -29,12 +29,15 @@ const dcUrl = 'https://dc-metrobus-2020-api.herokuapp.com'
 const seattleUrl = 'http://localhost:3000'
 
 function changeBaseUrl(city) {
-  switch(city) {
-      case 'seattle':
-          baseUrl = seattleUrl
-      case 'washington':
-          baseUrl = dcUrl
+  function getBaseUrl(city) {
+    switch(city) {
+        case 'seattle':
+            return seattleUrl
+        case 'washington':
+            return dcUrl
+    }
   }
+  baseUrl = getBaseUrl(city)
 }
 
 function changeCityName(city) {
@@ -53,4 +56,5 @@ function changeCityName(city) {
 function changeCity(city) {
   changeBaseUrl(city)
   changeCityName(city)
+  debugger
 }
