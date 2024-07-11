@@ -7,7 +7,6 @@ module AssistantUtils
         'Thu' => 'thursday',
         'Fri' => 'friday',
         'Sat' => 'saturday',
-        'Sun' => 'sunday'
     }
 
     def day_of_week
