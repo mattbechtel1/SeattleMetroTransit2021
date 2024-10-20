@@ -27,3 +27,4 @@
 
 # Ignore GTFS files
 /public/google_transit*
+/public/sound_transit*

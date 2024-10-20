@@ -10,6 +10,21 @@ ST_GTFS_FEED_URL = "https://www.soundtransit.org/GTFS-rail/40_gtfs.zip"
 ST_ZIP_LOCATION = 'public/40_gtfs.zip'
 ST_EXTRACTED_LOCATION = 'public/sound_transit/'
 
+
+def clean_file file_name, column_hash
+    csv_table = CSV.read(file_name, headers: true)
+    csv_table.by_col!.delete_if do |column_name, column_values|
+        !column_hash.has_key?(column_name)
+    end
+    csv_table.by_row!
+    CSV.open("#{file_name}.out", "w+") do |csv|
+        csv << csv_table.headers
+        csv_table.each { |row| 
+            csv << row
+        }
+    end
+end
+
 namespace :download_gtfs_feed do
     desc "This task downloads the gtfs data"
     task :download_file do
@@ -82,9 +97,21 @@ namespace :update_gtfs_data do
     end
 end
 
+
+def process_file file, model, column_map, sound_transit = false
+    model.delete_all
+    if sound_transit
+        location = ST_EXTRACTED_LOCATION
+    else
+        location = EXTRACTED_LOCATION
+    end
+    file_name = location + file
+    clean_file(file_name, column_map)
+    model.copy_from "#{file_name}.out" , :map => column_map, encoding: "bom|utf-8"
+end
+
 def agency_copy
-    Agency.delete_all
-    Agency.copy_from "#{EXTRACTED_LOCATION}/agency.txt", :map => {
+    agency_map = {
         'agency_id' => 'agency_code',
         'agency_name' => 'name',
         'agency_url' => 'url',
@@ -93,12 +120,12 @@ def agency_copy
         'agency_phone' => 'phone',
         'agency_fare_url' => 'fare_url',
         :null => '',
-    }, encoding: 'bom|utf-8'
+    }
+    process_file "agency.txt", Agency, agency_map
 end
 
 def fare_attributues_copy
-    FareAttribute.delete_all
-    FareAttribute.copy_from "#{EXTRACTED_LOCATION}/fare_attributes.txt", :map => {
+    fare_map = {
         'fare_id' => 'id',
         'agency_id' => 'agency_id',
         'fare_period_id' => 'fare_period_id',
@@ -109,12 +136,12 @@ def fare_attributues_copy
         'transfers' => 'transfers',
         'transfer_duration' => 'transfer_duration',
         :null => '',
-    }, encoding: 'bom|utf-8'
+    }
+    process_file "fare_attributes.txt", FareAttribute, fare_map
 end
 
 def routes_copy
-    Route.delete_all
-    Route.copy_from "#{EXTRACTED_LOCATION}/routes.txt", :map => {
+    route_map = {
         'route_id' => 'id',
         'agency_id' => 'agency_id',
         'route_short_name' => 'short_name',
@@ -125,12 +152,12 @@ def routes_copy
         'route_color' => 'color',
         'route_text_color' => 'text_color',
         :null => '',
-    }, encoding: 'bom|utf-8'
+    }
+    process_file "routes.txt", Route, route_map
 end
 
 def rail_routes_copy
-    RailRoute.delete_all
-    RailRoute.copy_from "#{ST_EXTRACTED_LOCATION}/routes.txt", :map => {
+    rail_route_map = {
         'route_id' => 'id',
         'agency_id' => 'agency_id',
         'route_short_name' => 'short_name',
@@ -141,23 +168,23 @@ def rail_routes_copy
         'route_color' => 'color',
         'route_text_color' => 'text_color',
         :null => '',
-    }, encoding: 'bom|utf-8'
+    }
+    process_file "routes.txt", RailRoute, rail_route_map, true
 end
 
 def fare_rules_copy
-    RouteFare.delete_all
-    RouteFare.copy_from "#{EXTRACTED_LOCATION}/fare_rules.txt", :map => {
+    fare_rule_map = {
         'destination_id' => 'destination_id',
         'contains_id' => 'contains_id',
         'origin_id' => 'origin_id',
         'fare_id' => 'fare_attribute_id',
         'route_id' => 'route_id',
-    }, encoding: "bom|utf-8"
+    }
+    process_file "fare_rules.txt", RouteFare, fare_rule_map
 end
 
 def trips_copy
-    Trip.delete_all
-    Trip.copy_from "#{EXTRACTED_LOCATION}/trips.txt", :map => {
+    trips_map = {
         'route_id' => 'route_id',
         'service_id' => 'calendar_id',
         'trip_id' => 'id',
@@ -170,12 +197,12 @@ def trips_copy
         'fare_id' => 'fare_attribute_id',
         'wheelchair_accessible' => 'wheelchair_accessible',
         'wheelchair_boarding' => 'wheelchair_boarding',
-    }, encoding: 'bom|utf-8'
+    }
+    process_file "trips.txt", Trip, trips_map
 end
 
 def stops_copy
-    Stop.delete_all
-    Stop.copy_from "#{EXTRACTED_LOCATION}/stops.txt", :map => {
+    stops_map = {
         'stop_id' => 'id',
         'stop_code' => 'code',
         'stop_name' => 'name',
@@ -187,12 +214,12 @@ def stops_copy
         'location_type' => 'location_type',
         'parent_station' => 'stop_id',
         'stop_timezone' => 'timezone'
-    }, encoding: 'bom|utf-8'
+    }
+    process_file "stops.txt", Stop, stops_map
 end
 
 def stations_copy
-    Station.delete_all
-    Station.copy_from "#{ST_EXTRACTED_LOCATION}/stops.txt", :map => {
+    stations_map = {
         'stop_id' => 'id',
         'stop_code' => 'code',
         'stop_name' => 'name',
@@ -207,12 +234,13 @@ def stations_copy
         'wheelchair_boarding' => 'wheelchair_boarding',
         'tts_stop_name' => 'full_stop_name',
         'platform_code' => 'platform_code'
-    }, encoding: 'bom|utf-8'
+    }
+    process_file "stops.txt", Station, stations_map, true
 end
 
 def stoptimes_copy
     Stoptime.delete_all
-    Stoptime.copy_from  "#{EXTRACTED_LOCATION}/stop_times.txt", :map => {
+    stoptimes_map = {
         'trip_id' => 'trip_id',
         'arrival_time' => 'arrival_time',
         'departure_time' => 'departure_time',
@@ -223,12 +251,12 @@ def stoptimes_copy
         'drop_off_type' => 'dropoff_type',
         'shape_dist_traveled' => 'shape_distance_traveled',
         'timepoint' => 'timepoint'
-    }, encoding: 'bom|utf-8'
+    }
+    process_file "stop_times.txt", Stoptime, stoptimes_map
 end
 
 def calendar_copy
-    Calendar.delete_all
-    Calendar.copy_from "#{EXTRACTED_LOCATION}/calendar.txt", :map => {
+    calendar_map = {
         'service_id' => 'id',
         'monday' => 'monday',
         'tuesday' => 'tuesday',
@@ -239,5 +267,6 @@ def calendar_copy
         'sunday' => 'sunday',
         'start_date' => 'start_date',
         'end_date' => 'end_date'
-    }, encoding: 'bom|utf-8'
+    }
+    process_file "calendar.txt", Calendar, calendar_map
 end
