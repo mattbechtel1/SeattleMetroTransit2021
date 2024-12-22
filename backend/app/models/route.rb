@@ -4,6 +4,7 @@ class Route < ApplicationRecord
   has_many :trips
   has_many :route_fares
   has_many :fares, through: :route_fares, source: :fare_attribute
+  has_many :stoptimes, through: :trips
 
   alias_attribute :LineDescription, :description
   alias_attribute :RouteID, :short_name

@@ -27,4 +27,14 @@ class Trip < ApplicationRecord
   def route_name
     self.route.short_name + " " + self.route.description
   end
+
+  def stop_id
+    self.stop.id
+  end
+
+  def self.get_stoptimes trip_ids
+    Stoptime.joins(:trip).joins(:stop).joins(:route)
+      .select("stoptimes.id AS id, stops.id AS stop_id, stops.name AS stop_name, trips.id AS trip_id, trips.headsign, routes.short_name AS route_short_name, CASE trips.direction_id WHEN 0 THEN 'Outbound' WHEN 1 THEN 'Inbound' ELSE 'unknown' END AS directional_text")
+      .where(trip_id: trip_ids)
+  end
 end

@@ -3,6 +3,7 @@ class Stoptime < ApplicationRecord
   acts_as_copy_target
   belongs_to :trip
   belongs_to :stop
+  has_one :route, through: :trip
   has_one :calendar, through: :trip
 
   alias_attribute :Minutes, :minutes_to_bus 
