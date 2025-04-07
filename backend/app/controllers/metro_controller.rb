@@ -4,23 +4,6 @@ require 'google/transit/gtfs-realtime.pb'
 require 'json'
 
 class MetroController < ApplicationController
-  COLOR_DICT = {
-    "BL" => "BLUE",
-    "OR" => "ORANGE",
-    "SV" => "SILVER",
-    "GR" => "GREEN",
-    "RD" => "RED",
-    "YL" => "YELLOW"
-  }
-
-  BUS_ROUTE_SCHEDULE_URL = 'https://api.wmata.com/Bus.svc/json/jRouteSchedule'
-  BUS_ALERTS_URL = 'https://api.wmata.com/gtfs/bus-gtfsrt-alerts.pb'
-
-  STATIONS_URL = 'https://api.wmata.com/Rail.svc/json/jStations'
-  RAIL_LINES_URL = 'https://api.wmata.com/Rail.svc/json/jLines'
-  RAIL_ALERTS_URL = 'https://api.wmata.com/gtfs/rail-gtfsrt-alerts.pb'
-  STATION_PREDICTIONS_URL = 'https://api.wmata.com/StationPrediction.svc/json/GetPrediction'
-
   def bus_stops
     if params[:RouteID].strip.empty?
       render json: {:bus => {:Message => "Could not parse Route ID"}}, status: 400
@@ -78,81 +61,36 @@ class MetroController < ApplicationController
   end
 
   def stations
-    def sorted_json_response_from_wmata
-      # Fetches station list from wamta and sorts accordingly
-      response = fetch_data(STATIONS_URL, nil)
-      response = JSON.parse(response)
-      if params[:Linecode]
-        response["Stations"].sort_by { |station| station["Lon"] }.to_json
-      else
-        response["Stations"].sort_by { |station| station["Name"] }.to_json
-      end
-    end
-
-
-    if params[:Linecode]
-      unless $redis.exists?("#{params[:Linecode]}-stations")
-        $redis.setex("#{params[:Linecode]}-stations", ONE_WEEK, sorted_json_response_from_wmata)
-      end
-
-      render json: { 
-        :alerts => $redis.lrange("alert-#{COLOR_DICT[params[:Linecode]]}", 0, -1), 
-        :stations => JSON.parse($redis.get("#{params[:Linecode]}-stations"))
-      }.to_json
-    
-    else
-      unless $redis.exists?('allStations')
-        $redis.setex('allStations', ONE_WEEK, sorted_json_response_from_wmata)
-      end
-
+    if $redis.exists?('allStations')
       render json: $redis.get('allStations')
+    else
+      render json: {error: true, message: "stations API not implemented", status: 501}
     end
   end
 
   def station
-    unless $redis.exists?("station-#{params[:station_code]}")
-      response = fetch_data("#{STATION_PREDICTIONS_URL}/#{params[:station_code]}", nil)
-      $redis.setex("station-#{params[:station_code]}", THIRD_MINUTE, response)
+    if $redis.exists?("station-#{params[:station_code]}")
+      render json: $redis.get("station-#{params[:station_code]}")
+    else
+      render json: {error: true, message: "station API not implemented", status: 501}
+      # $redis.setex("station-#{params[:station_code]}", THIRD_MINUTE, response)
     end
-
-    render json: $redis.get("station-#{params[:station_code]}")
   end
 
   def lines
-    unless $redis.exists?("lines")
-      response = fetch_data(RAIL_LINES_URL, nil)
-      $redis.set('lines', response)
+    if $redis.exists?("lines")
+      render json: $redis.get('lines')
+    else
+      render json: {error: true, message: "lines API not implemented", status: 501}
+      # response = fetch_data(RAIL_LINES_URL, nil)
+      # $redis.set('lines', response)
     end
-
-    render json: $redis.get('lines')
   end
 
 
   # alerts does not return data to the frontend
   def alerts
-    unless $redis.get('alert-times')
-      bus_response = fetch_data(BUS_ALERTS_URL, "{body}")
-      bus_feed = Transit_realtime::FeedMessage.decode(bus_response)
-      
-      bus_feed.entity.filter { |entity| entity.id[0] == "1" }.each do |entity|
-        entity.alert.informed_entity.each do |bus|
-          $redis.rpush("alert-#{bus.route_id}", entity.alert.header_text.translation[0].text)
-          $redis.expire("alert-#{bus.route_id}", TEN_MINUTES)
-        end
-      end
-
-      train_response = fetch_data(RAIL_ALERTS_URL, "{body}")
-      train_feed = Transit_realtime::FeedMessage.decode(train_response)
-      train_feed.entity.each do |entity|
-        entity.alert.informed_entity.each do |alert|
-          $redis.rpush("alert-#{alert.route_id}", entity.alert.description_text.translation[0].text)
-          $redis.expire("alert-#{alert.route_id}", TEN_MINUTES)
-        end
-      end
-
-      $redis.setex('alert-times', TEN_MINUTES, true)
-      render json: bus_feed
-    end
+      render json: {error: true, message: "alerts API not implemented", status: 501}
   end
 
   private
