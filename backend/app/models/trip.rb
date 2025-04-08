@@ -8,9 +8,7 @@ class Trip < ApplicationRecord
   has_many :stops, through: :stoptimes
 
   alias_attribute :TripHeadsign, :headsign
-  alias_attribute :TripDirectionText, :directional_text
-  alias_attribute :StopTimes, :stoptimes
-
+  alias StopTimes stoptimes
 
   def self.by_route_and_direction route_short_name, direction_id
     if route_short_name.to_i < 1
@@ -19,11 +17,12 @@ class Trip < ApplicationRecord
     end
     return Trip.joins(:route).where(routes: {"short_name": route_short_name}, direction_id: direction_id)
   end
-
+  
   def directional_text
     ["Outbound", "Inbound"][self.direction_id]
   end
-
+  alias TripDirectionText directional_text
+  
   def route_name
     self.route.short_name + " " + self.route.description
   end

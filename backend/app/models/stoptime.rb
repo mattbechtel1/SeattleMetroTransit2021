@@ -6,37 +6,35 @@ class Stoptime < ApplicationRecord
   has_one :route, through: :trip
   has_one :calendar, through: :trip
 
-  alias_attribute :Minutes, :minutes_to_bus 
-  alias_attribute :TripID, :trip_id_string
-  alias_attribute :DirectionText, :direction_text
-  alias_attribute :DirectionNum, :direction_id_string
-  alias_attribute :RouteID, :route_short_name
-  alias_attribute :StopName, :stop_name
-  alias_attribute :StopID, :stop_id
-
   def trip_id_string
     self.trip.id.to_s
   end
+  alias TripID trip_id_string
 
   def stop_name
     self.stop.StopName
   end
+  alias StopName stop_name
 
   def stop_id 
     self.stop.id
   end
+  alias StopID stop_id
 
   def direction_id_string
     self.trip.direction_id.to_s
   end
+  alias DirectionNum direction_id_string
 
   def route_short_name
     self.trip.route.short_name
   end
+  alias RouteID route_short_name
 
   def direction_text
     self.trip.directional_text + " to " + self.trip.headsign
   end
+  alias DirectionText direction_text
 
   def real_departure_time
     real_departure_time = self.departure_time
@@ -50,6 +48,7 @@ class Stoptime < ApplicationRecord
   def minutes_to_bus    
     ((self.real_departure_time.to_time - Time.now) / 60).floor()
   end
+  alias Minutes minutes_to_bus
 
   def self.buses_next_hour
     # Need to add late night logic here

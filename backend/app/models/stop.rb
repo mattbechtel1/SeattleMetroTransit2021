@@ -6,10 +6,10 @@ class Stop < ApplicationRecord
   has_many :routes, through: :trips
 
   alias_attribute :StopName, :name
-  alias_attribute :Predictions, :bus_predictions
-
+  
   def bus_predictions
     self.stoptimes.buses_next_hour
   end
+  alias Predictions bus_predictions
 
 end
