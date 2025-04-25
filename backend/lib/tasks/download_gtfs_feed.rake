@@ -12,6 +12,8 @@ ST_EXTRACTED_LOCATION = 'public/sound_transit/'
 
 
 def clean_file file_name, column_hash
+    Rails.logger.debug "Cleaning " + file_name
+    Rails.logger.debug file_name + " size: " + File.size(file_name).to_s
     csv_table = CSV.read(file_name, headers: true)
     csv_table.by_col!.delete_if do |column_name, column_values|
         !column_hash.has_key?(column_name)
@@ -23,6 +25,7 @@ def clean_file file_name, column_hash
             csv << row
         }
     end
+    Rails.logger.debug 'Generated ' + file_name + '.out'
 end
 
 namespace :download_gtfs_feed do
@@ -64,6 +67,7 @@ namespace :download_gtfs_feed do
     end
 
     task :parse_files => [:environment] do 
+        Rails.logger.debug 'Parsing files'
         agency_copy
         fare_attributues_copy
         routes_copy
@@ -74,9 +78,11 @@ namespace :download_gtfs_feed do
         stops_copy
         stations_copy
         stoptimes_copy
+        Rails.logger.debug 'Finished parsing files'
     end
 
     task :cleanup do
+        Rails.logger.debug "Removing files"
         FileUtils.rm_rf(EXTRACTED_LOCATION) if File.directory?(EXTRACTED_LOCATION)
         FileUtils.rm_rf(ST_EXTRACTED_LOCATION) if File.directory?(ST_EXTRACTED_LOCATION)
         File.delete(ZIP_LOCATION) if File.exist?(ZIP_LOCATION)
@@ -99,6 +105,7 @@ end
 
 
 def process_file file, model, column_map, sound_transit = false
+    Rails.logger.debug 'Processing ' + model.name
     model.delete_all
     if sound_transit
         location = ST_EXTRACTED_LOCATION
@@ -107,7 +114,10 @@ def process_file file, model, column_map, sound_transit = false
     end
     file_name = location + file
     clean_file(file_name, column_map)
-    model.copy_from "#{file_name}.out" , :map => column_map, encoding: "bom|utf-8"
+    result = model.copy_from "#{file_name}.out" , :map => column_map, encoding: "bom|utf-8"
+    Rails.logger.debug 'Finished processing ' + model.name
+    result.clear
+    Rails.logger.debug 'Cleared ' + model.name + ' from memory'
 end
 
 def agency_copy
