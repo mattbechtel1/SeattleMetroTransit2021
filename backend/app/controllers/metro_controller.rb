@@ -4,6 +4,8 @@ require 'google/transit/gtfs-realtime.pb'
 require 'json'
 
 class MetroController < ApplicationController
+  before_action :check_redis
+
   def bus_stops
     if params[:RouteID].strip.empty?
       render json: {:bus => {:Message => "Could not parse Route ID"}}, status: 400
@@ -111,6 +113,15 @@ class MetroController < ApplicationController
 
   def strong_params
     params.permit(:RouteID, :IncludingVariations, :StopId, :Linecode)
+  end
+
+  def check_redis
+    begin
+      random_key = 'bfb74640-ed64-4eff-bfde-848daecfae5f'
+      $redis.get(random_key)
+    rescue RedisClient::CannotConnectError => error
+      render json: {error: True, message: 'Redis cache is misconfigured' + error, status: 500}
+    end
   end
 
 end
