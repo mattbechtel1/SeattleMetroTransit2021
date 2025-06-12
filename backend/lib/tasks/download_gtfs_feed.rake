@@ -11,14 +11,71 @@ ST_ZIP_LOCATION = 'public/40_gtfs.zip'
 ST_EXTRACTED_LOCATION = 'public/sound_transit/'
 
 
+
+def handle_headsign obj
+    obj[:headsign] = obj[:headsign] || nil
+    obj
+end
+
+def log_large_file_error_detail chunk, error
+    Rails.logger.error("Keys in first object:")
+    first_object = chunk[0]
+    keys = first_object.keys
+    Rails.logger.error("Standard keys: " + keys.to_s)
+    failed = false
+    chunk.each { |item| 
+        if item.keys != keys
+            Rails.logger.error "Differing keys found in item: " + item.to_s
+            failed = true
+            break
+        end
+    }
+    if !failed
+        Rails.logger.error "Unable to identify source of ArgumentError"
+    end
+
+    raise error
+end
+
+def clean_large_file file_name, column_hash, model
+    counter = 1
+    total_chunks = SmarterCSV.process(file_name, {chunk_size: 50000, silence_missing_keys: true, key_mapping: column_hash}) do |chunk|
+        begin
+            Rails.logger.debug "Processing chunk ##{counter.to_s}"
+            model.insert_all(chunk)
+            counter += 1
+        rescue ArgumentError => error
+            Rails.logger.error("Caught argument error while processing chunk # #{counter.to_s} for #{model.name}")
+            Rails.logger.error(error.message)
+            if model == Stoptime
+                Rails.logger.error("Attempting custom reattempt for #{model.name}")
+                new_chunk = chunk.map do |item|
+                    handle_headsign(item)
+                end
+                begin
+                    model.insert_all(new_chunk)
+                    Rails.logger.warn "Reattempt succeeded for chunk ##{counter.to_s}"
+                    counter += 1
+                rescue ArgumentError => new_error
+                    log_large_file_error_detail new_chunk, new_error
+                end
+            else
+                log_large_file_error_detail chunk, error
+            end
+        end
+    end
+end
+
 def clean_file file_name, column_hash
     Rails.logger.debug "Cleaning " + file_name
-    Rails.logger.debug file_name + " size: " + File.size(file_name).to_s
     csv_table = CSV.read(file_name, headers: true)
+    Rails.logger.debug "Deleting extra columns"
     csv_table.by_col!.delete_if do |column_name, column_values|
         !column_hash.has_key?(column_name)
     end
+    Rails.logger.debug "Arranging by row"
     csv_table.by_row!
+    Rails.logger.debug "Opening " + file_name
     CSV.open("#{file_name}.out", "w+") do |csv|
         csv << csv_table.headers
         csv_table.each { |row| 
@@ -113,11 +170,19 @@ def process_file file, model, column_map, sound_transit = false
         location = EXTRACTED_LOCATION
     end
     file_name = location + file
-    clean_file(file_name, column_map)
-    result = model.copy_from "#{file_name}.out" , :map => column_map, encoding: "bom|utf-8"
-    Rails.logger.debug 'Finished processing ' + model.name
-    result.clear
-    Rails.logger.debug 'Cleared ' + model.name + ' from memory'
+    file_size = File.size(file_name)
+    Rails.logger.debug file_name + " size: " + file_size.to_s
+    if file_size < 10000000
+        clean_file(file_name, column_map)
+        result = model.copy_from "#{file_name}.out" , :map => column_map, encoding: "bom|utf-8"
+        Rails.logger.debug 'Finished processing ' + model.name
+        result.clear
+        Rails.logger.debug 'Cleared ' + model.name + ' from memory'
+    else
+        Rails.logger.error file_name + ' is too large to process. Need to split it up'
+        clean_large_file(file_name, column_map, model)
+        Rails.logger.debug 'Finished processing ' + model.name
+    end
 end
 
 def agency_copy
@@ -251,16 +316,16 @@ end
 def stoptimes_copy
     Stoptime.delete_all
     stoptimes_map = {
-        'trip_id' => 'trip_id',
-        'arrival_time' => 'arrival_time',
-        'departure_time' => 'departure_time',
-        'stop_id' => 'stop_id',
-        'stop_sequence' => 'sequence',
-        'stop_headsign' => 'headsign',
-        'pickup_type' => 'pickup_type',
-        'drop_off_type' => 'dropoff_type',
-        'shape_dist_traveled' => 'shape_distance_traveled',
-        'timepoint' => 'timepoint'
+        :trip_id => :trip_id,
+        :arrival_time => :arrival_time,
+        :departure_time => :departure_time,
+        :stop_id => :stop_id,
+        :stop_sequence => :sequence,
+        :stop_headsign => :headsign,
+        :pickup_type => :pickup_type,
+        :drop_off_type => :dropoff_type,
+        :shape_dist_traveled => :shape_distance_traveled,
+        :timepoint => :timepoint
     }
     process_file "stop_times.txt", Stoptime, stoptimes_map
 end

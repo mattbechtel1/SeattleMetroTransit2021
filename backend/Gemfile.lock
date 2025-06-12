@@ -232,6 +232,7 @@ GEM
       io-console (~> 0.5)
     rubyzip (2.4.1)
     securerandom (0.4.1)
+    smarter_csv (1.14.3)
     spring (2.1.1)
     spring-watcher-listen (2.0.1)
       listen (>= 2.7, < 4.0)
@@ -273,6 +274,7 @@ DEPENDENCIES
   redis-namespace
   redis-rails
   rubyzip
+  smarter_csv
   spring
   spring-watcher-listen (~> 2.0.0)
   tzinfo-data
