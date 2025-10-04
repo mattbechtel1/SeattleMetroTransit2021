@@ -71,19 +71,19 @@ class MetroController < ApplicationController
   end
 
   def station
-    if $redis.exists?("station-#{params[:station_code]}")
-      render json: $redis.get("station-#{params[:station_code]}")
+    if $redis.exists?("sea-station-#{params[:station_code]}")
+      render json: $redis.get("sea-station-#{params[:station_code]}")
     else
-      render json: {error: true, message: "station API not implemented", status: 501}
+      render json: {error: true, message: "station API not implemented for Seattle", status: 501}
       # $redis.setex("station-#{params[:station_code]}", THIRD_MINUTE, response)
     end
   end
 
   def lines
-    if $redis.exists?("lines")
-      render json: $redis.get('lines')
+    if $redis.exists?("sea-lines")
+      render json: $redis.get('sea-lines')
     else
-      render json: {error: true, message: "lines API not implemented", status: 501}
+      render json: {error: true, message: "lines API not implemented for Seattle", status: 501}
       # response = fetch_data(RAIL_LINES_URL, nil)
       # $redis.set('lines', response)
     end
