@@ -63,10 +63,16 @@ class MetroController < ApplicationController
   end
 
   def stations
-    if $redis.exists?('allStations')
-      render json: $redis.get('allStations')
+    if params[:Linecode]
+      render json: {error: True, message: "stations API not implemented for Seattle line codes", status: 501}
+
     else
-      render json: {error: true, message: "stations API not implemented", status: 501}
+      unless $redis.exists?('sea-allStations')
+        response = Station.ordered_stations
+        serialized_stations = response.map { |s| StationSerializer.new(s).to_serialized_json }
+        $redis.setex('sea-allStations', ONE_WEEK, serialized_stations.to_json)
+      end
+        render json: JSON.parse($redis.get('sea-allStations'))
     end
   end
 
