@@ -132,6 +132,7 @@ namespace :download_gtfs_feed do
         fare_rules_copy
         calendar_copy
         trips_copy
+        rail_trips_copy
         stops_copy
         stations_copy
         stoptimes_copy
@@ -274,6 +275,17 @@ def trips_copy
         'wheelchair_boarding' => 'wheelchair_boarding',
     }
     process_file "trips.txt", Trip, trips_map
+end
+
+def rail_trips_copy
+    trips_map = {
+        'route_id' => 'rail_route_id',
+        'trip_short_name' => 'short_name',
+        'trip_id' => 'rail_trip_id',
+        'trip_headsign' => 'headsign',
+        'direction_id' => 'direction_id',
+    }
+    process_file 'trips.txt', RailTrip, trips_map, true
 end
 
 def stops_copy
