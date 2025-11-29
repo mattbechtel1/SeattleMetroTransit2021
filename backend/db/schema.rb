@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_10_16_051626) do
+ActiveRecord::Schema[7.2].define(version: 2025_11_02_053655) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -69,6 +69,18 @@ ActiveRecord::Schema[7.2].define(version: 2025_10_16_051626) do
     t.string "url"
     t.string "color"
     t.string "text_color"
+  end
+
+  create_table "rail_stoptimes", force: :cascade do |t|
+    t.string "rail_trip_id", null: false
+    t.string "station_id", null: false
+    t.string "arrival_time"
+    t.string "departure_time"
+    t.integer "sequence"
+    t.integer "timepoint"
+    t.integer "departure_buffer"
+    t.index ["rail_trip_id"], name: "index_rail_stoptimes_on_rail_trip_id"
+    t.index ["station_id"], name: "index_rail_stoptimes_on_station_id"
   end
 
   create_table "rail_trips", primary_key: "rail_trip_id", id: :string, force: :cascade do |t|
@@ -173,6 +185,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_10_16_051626) do
 
   add_foreign_key "fare_attributes", "agencies", primary_key: "agency_code", on_delete: :cascade
   add_foreign_key "favorites", "users"
+  add_foreign_key "rail_stoptimes", "rail_trips", primary_key: "rail_trip_id", on_delete: :cascade
+  add_foreign_key "rail_stoptimes", "stations"
   add_foreign_key "rail_trips", "rail_routes", on_delete: :cascade
   add_foreign_key "route_fares", "fare_attributes", on_delete: :cascade
   add_foreign_key "route_fares", "routes", on_delete: :cascade

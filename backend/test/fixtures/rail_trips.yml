@@ -3,13 +3,13 @@
 one:
   rail_route: one
   short_name: MyString
-  id: MyString
+  rail_trip_id: MyString
   headsign: MyString
   direction_id: 1
 
 two:
   rail_route: two
   short_name: MyString
-  id: MyString
+  rail_trip_id: MyString
   headsign: MyString
   direction_id: 1

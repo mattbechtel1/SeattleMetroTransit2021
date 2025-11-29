@@ -17,6 +17,12 @@ def handle_headsign obj
     obj
 end
 
+def handle_unwanted_shape obj
+    obj.delete(:shape_distance_traveled)
+    obj
+end
+
+
 def log_large_file_error_detail chunk, error
     Rails.logger.error("Keys in first object:")
     first_object = chunk[0]
@@ -37,6 +43,15 @@ def log_large_file_error_detail chunk, error
     raise error
 end
 
+def reattempt_chunk chunk, model, counter
+    begin
+        model.insert_all(chunk)
+        Rails.logger.warn "Reattempt succeeded for chunk ##{counter.to_s}"
+    rescue ArgumentError => new_error
+        log_large_file_error_detail chunk, new_error
+    end
+end
+
 def clean_large_file file_name, column_hash, model
     counter = 1
     total_chunks = SmarterCSV.process(file_name, {chunk_size: 50000, silence_missing_keys: true, key_mapping: column_hash}) do |chunk|
@@ -52,13 +67,15 @@ def clean_large_file file_name, column_hash, model
                 new_chunk = chunk.map do |item|
                     handle_headsign(item)
                 end
-                begin
-                    model.insert_all(new_chunk)
-                    Rails.logger.warn "Reattempt succeeded for chunk ##{counter.to_s}"
-                    counter += 1
-                rescue ArgumentError => new_error
-                    log_large_file_error_detail new_chunk, new_error
+                reattempt_chunk new_chunk, model, counter
+                counter += 1
+            elsif model == RailStoptime
+                Rails.logger.error("Attempting custom reattempt for #{model.name}")
+                new_chunk = chunk.map do |item|
+                    handle_unwanted_shape(item)
                 end
+                reattempt_chunk new_chunk, model, counter
+                counter += 1
             else
                 log_large_file_error_detail chunk, error
             end
@@ -136,6 +153,7 @@ namespace :download_gtfs_feed do
         stops_copy
         stations_copy
         stoptimes_copy
+        rail_stoptimes_copy
         Rails.logger.debug 'Finished parsing files'
     end
 
@@ -340,6 +358,19 @@ def stoptimes_copy
         :timepoint => :timepoint
     }
     process_file "stop_times.txt", Stoptime, stoptimes_map
+end
+
+def rail_stoptimes_copy
+    RailStoptime.delete_all
+    stoptimes_map = {
+        :trip_id => :rail_trip_id,
+        :stop_id => :station_id,
+        :departure_time => :departure_time,
+        :arrival_time => :arrival_time,
+        :stop_sequence => :sequence,
+        :shape_dist_traveled => :shape_distance_traveled
+    }
+    process_file "stop_times.txt", RailStoptime, stoptimes_map, true
 end
 
 def calendar_copy

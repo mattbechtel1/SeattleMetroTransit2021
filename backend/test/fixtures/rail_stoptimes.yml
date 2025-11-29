@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  rail_trip_id: one
+  station_id: one
+  arrival_time: MyString
+  departure_time: MyString
+  sequence: 1
+
+two:
+  rail_trip_id: two
+  station_id: two
+  arrival_time: MyString
+  departure_time: MyString
+  sequence: 1
