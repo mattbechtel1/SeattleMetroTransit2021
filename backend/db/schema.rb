@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_11_02_053655) do
+ActiveRecord::Schema[7.2].define(version: 2025_11_30_235526) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -60,6 +60,18 @@ ActiveRecord::Schema[7.2].define(version: 2025_11_02_053655) do
     t.index ["user_id"], name: "index_favorites_on_user_id"
   end
 
+  create_table "rail_calendars", id: :string, force: :cascade do |t|
+    t.boolean "monday"
+    t.boolean "tuesday"
+    t.boolean "wednesday"
+    t.boolean "thursday"
+    t.boolean "friday"
+    t.boolean "saturday"
+    t.boolean "sunday"
+    t.integer "start_date"
+    t.integer "end_date"
+  end
+
   create_table "rail_routes", id: :string, force: :cascade do |t|
     t.string "agency_id"
     t.string "short_name"
@@ -88,6 +100,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_11_02_053655) do
     t.string "short_name"
     t.string "headsign"
     t.integer "direction_id"
+    t.string "rail_calendar_id"
+    t.index ["rail_calendar_id"], name: "index_rail_trips_on_rail_calendar_id"
     t.index ["rail_route_id"], name: "index_rail_trips_on_rail_route_id"
   end
 

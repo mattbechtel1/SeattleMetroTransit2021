@@ -148,6 +148,7 @@ namespace :download_gtfs_feed do
         rail_routes_copy
         fare_rules_copy
         calendar_copy
+        rail_calendar_copy
         trips_copy
         rail_trips_copy
         stops_copy
@@ -302,6 +303,7 @@ def rail_trips_copy
         'trip_id' => 'rail_trip_id',
         'trip_headsign' => 'headsign',
         'direction_id' => 'direction_id',
+        'service_id' => 'rail_calendar_id',
     }
     process_file 'trips.txt', RailTrip, trips_map, true
 end
@@ -374,6 +376,7 @@ def rail_stoptimes_copy
 end
 
 def calendar_copy
+    Calendar.delete_all
     calendar_map = {
         'service_id' => 'id',
         'monday' => 'monday',
@@ -387,4 +390,21 @@ def calendar_copy
         'end_date' => 'end_date'
     }
     process_file "calendar.txt", Calendar, calendar_map
+end
+
+def rail_calendar_copy
+    RailCalendar.delete_all
+    calendar_map = {
+        'service_id' => 'id',
+        'monday' => 'monday',
+        'tuesday' => 'tuesday',
+        'wednesday' => 'wednesday',
+        'thursday' => 'thursday',
+        'friday' => 'friday',
+        'saturday' => 'saturday',
+        'sunday' => 'sunday',
+        'start_date' => 'start_date',
+        'end_date' => 'end_date'
+    }
+    process_file "calendar.txt", RailCalendar, calendar_map, true
 end
