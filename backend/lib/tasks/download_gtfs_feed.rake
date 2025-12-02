@@ -346,7 +346,6 @@ def stations_copy
 end
 
 def stoptimes_copy
-    Stoptime.delete_all
     stoptimes_map = {
         :trip_id => :trip_id,
         :arrival_time => :arrival_time,
@@ -363,7 +362,6 @@ def stoptimes_copy
 end
 
 def rail_stoptimes_copy
-    RailStoptime.delete_all
     stoptimes_map = {
         :trip_id => :rail_trip_id,
         :stop_id => :station_id,
@@ -376,7 +374,6 @@ def rail_stoptimes_copy
 end
 
 def calendar_copy
-    Calendar.delete_all
     calendar_map = {
         'service_id' => 'id',
         'monday' => 'monday',
@@ -393,7 +390,6 @@ def calendar_copy
 end
 
 def rail_calendar_copy
-    RailCalendar.delete_all
     calendar_map = {
         'service_id' => 'id',
         'monday' => 'monday',
