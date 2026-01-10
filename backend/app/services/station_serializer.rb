@@ -5,10 +5,12 @@ class StationSerializer
 
     def to_serialized_json
         format = {
-            methods: [:Name, :Code], 
+            include: {
+                Trains: {
+                    only: [:arrival_time, :departure_time, :rail_trip_id]
+                }
+            }
         }
-        @station.as_json(format)
+        @station.to_json(format)
     end
 end
-
-

@@ -12,4 +12,6 @@ class Station < ApplicationRecord
     def train_predictions
         self.rail_stoptimes.trains_next_hour
     end
+
+    alias Trains train_predictions
 end

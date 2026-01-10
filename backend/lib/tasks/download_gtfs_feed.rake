@@ -18,7 +18,7 @@ def handle_headsign obj
 end
 
 def handle_unwanted_shape obj
-    obj.delete(:shape_distance_traveled)
+    obj.delete(:shape_dist_traveled)
     obj
 end
 
@@ -59,8 +59,8 @@ def clean_large_file file_name, column_hash, model
             Rails.logger.debug "Processing chunk ##{counter.to_s}"
             model.insert_all(chunk)
             counter += 1
-        rescue ArgumentError => error
-            Rails.logger.error("Caught argument error while processing chunk # #{counter.to_s} for #{model.name}")
+        rescue ArgumentError, ActiveRecord::UnknownAttributeError => error
+            Rails.logger.error("Caught error while processing chunk # #{counter.to_s} for #{model.name}")
             Rails.logger.error(error.message)
             if model == Stoptime
                 Rails.logger.error("Attempting custom reattempt for #{model.name}")
@@ -368,7 +368,6 @@ def rail_stoptimes_copy
         :departure_time => :departure_time,
         :arrival_time => :arrival_time,
         :stop_sequence => :sequence,
-        :shape_dist_traveled => :shape_distance_traveled
     }
     process_file "stop_times.txt", RailStoptime, stoptimes_map, true
 end

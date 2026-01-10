@@ -2,9 +2,10 @@ class RailTrip < ApplicationRecord
   acts_as_copy_target
   belongs_to :rail_route
   belongs_to :rail_calendar, optional: true
+  has_many :rail_stoptimes
 
-  def self.next_station_trains(station)
-    RailStoptime.where(station_code: station)
+  def trip_code
+    self.rail_trip_id
   end
 
 end

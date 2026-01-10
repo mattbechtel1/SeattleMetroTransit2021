@@ -1,6 +1,8 @@
 class RailStoptime < ApplicationRecord
+  extend AssistantUtils
   belongs_to :rail_trip
   belongs_to :station
+  has_one :rail_calendar, through: :rail_trip
 
 
   def self.trains_next_hour
@@ -20,6 +22,8 @@ class RailStoptime < ApplicationRecord
     end
     RailStoptime.where(
       "departure_time >= ? AND departure_time < ?", formatted_now, hour_from_now
+    ).joins(rail_trip: :rail_calendar).where("rail_calendars.start_date <= ? AND rail_calendars.end_date >= ? AND rail_calendars.#{adj_day_of_week} = 'true'", date.strftime("%Y%m%d"), date.strftime("%Y%m%d")
     ).order(:departure_time)
+
   end
 end
