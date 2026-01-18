@@ -38,7 +38,7 @@ class Stoptime < ApplicationRecord
   alias DirectionText direction_text
 
   def minutes_to_bus    
-    ((self.real_departure_time.to_time - Time.now) / 60).floor()
+    ((self.real_departure_time - Time.now) / 60).floor()
   end
   alias Minutes minutes_to_bus
 

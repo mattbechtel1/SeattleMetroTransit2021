@@ -6,7 +6,9 @@ module TimeRecord
         if self.departure_time[0].to_i == 2 && self.departure_time[1].to_i > 3
             converted_time[0] = "0"
             converted_time[1] = (self.departure_time[1].to_i - 4).to_s
+            converted_time.to_time + 1.day
+        else
+            converted_time.to_time
         end
-        converted_time
     end
 end
