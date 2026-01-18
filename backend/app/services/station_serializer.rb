@@ -7,7 +7,7 @@ class StationSerializer
         format = {
             include: {
                 Trains: {
-                    only: [:arrival_time, :departure_time, :rail_trip_id]
+                    methods: [:DestinationName, :Line, :Min]
                 }
             }
         }

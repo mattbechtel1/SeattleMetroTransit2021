@@ -76,12 +76,12 @@ class MetroController < ApplicationController
   end
 
   def station
-    if $redis.exists?("sea-station-#{params[:station_code]}")
-      render json: $redis.get("sea-station-#{params[:station_code]}")
-    else
-      render json: {error: true, message: "station API not implemented for Seattle", status: 501}
-      # $redis.setex("station-#{params[:station_code]}", THIRD_MINUTE, response)
+    unless $redis.exists?("sea-station-#{params[:station_code]}")
+      s = Station.find(params[:station_code])
+      serialized_station = StationSerializer.new(s).to_serialized_json
+      $redis.setex("sea-station-#{params[:station_code]}", THIRD_MINUTE, serialized_station.to_json)
     end
+    render json: JSON.parse($redis.get("sea-station-#{params[:station_code]}"))
   end
 
   def lines
@@ -117,7 +117,7 @@ class MetroController < ApplicationController
   end
 
   def strong_params
-    params.permit(:RouteID, :IncludingVariations, :StopId, :Linecode)
+    params.permit(:RouteID, :IncludingVariations, :StopId, :Linecode, :station_code)
   end
 
   def check_redis

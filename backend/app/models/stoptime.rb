@@ -1,5 +1,6 @@
 class Stoptime < ApplicationRecord
   extend AssistantUtils
+  include TimeRecord
   acts_as_copy_target
   belongs_to :trip
   belongs_to :stop
@@ -35,15 +36,6 @@ class Stoptime < ApplicationRecord
     self.trip.directional_text + " to " + self.trip.headsign
   end
   alias DirectionText direction_text
-
-  def real_departure_time
-    real_departure_time = self.departure_time
-    if self.departure_time[0].to_i == 2 && self.departure_time[1].to_i > 3
-      real_departure_time[0] = "0"
-      real_departure_time[1] = (self.departure_time[1].to_i - 4).to_s
-    end
-    real_departure_time
-  end
 
   def minutes_to_bus    
     ((self.real_departure_time.to_time - Time.now) / 60).floor()

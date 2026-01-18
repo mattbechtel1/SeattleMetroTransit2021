@@ -22,7 +22,6 @@ def handle_unwanted_shape obj
     obj
 end
 
-
 def log_large_file_error_detail chunk, error
     Rails.logger.error("Keys in first object:")
     first_object = chunk[0]

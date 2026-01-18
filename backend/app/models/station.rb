@@ -1,6 +1,7 @@
 class Station < ApplicationRecord
     acts_as_copy_target
     belongs_to :station, optional: true
+    has_many :stations, foreign_key: :stop_id
     has_many :rail_stoptimes
     alias_attribute :Code, :id
     alias_attribute :Name, :name
@@ -9,9 +10,17 @@ class Station < ApplicationRecord
         self.all.where.not(description: nil).where(stop_id: nil).order(:name)
     end
 
-    def train_predictions
-        self.rail_stoptimes.trains_next_hour
+    def platforms
+        self.stations.where.not(platform_code: :nil)
     end
 
+    def train_predictions
+        if self.stop_id.nil? || self.stop_id === self.id
+            # Use platforms
+            RailStoptime.where(station_id: self.platforms.pluck(:id)).trains_next_hour
+        else
+            self.rail_stoptimes.trains_next_hour
+        end
+    end
     alias Trains train_predictions
 end
