@@ -64,7 +64,8 @@ class MetroController < ApplicationController
 
   def stations
     if params[:Linecode]
-      render json: {error: True, message: "stations API not implemented for Seattle line codes", status: 501}
+      
+      render json: {error: true, message: "stations API not implemented for Seattle line codes", status: 501}.to_json
     else
       unless $redis.exists?('sea-allStations')
         response = Station.ordered_stations
@@ -86,11 +87,13 @@ class MetroController < ApplicationController
 
   def lines
     if $redis.exists?("sea-lines")
-      render json: $redis.get('sea-lines')
+      render json: {:Lines => JSON.parse($redis.get('sea-lines'))}.to_json
     else
-      render json: {error: true, message: "lines API not implemented for Seattle", status: 501}
+      response = RailRoute.ordered_routes
+      serialized_routes = response.map { |r| RailRouteSerializer.new(r).to_serialized_json }
+      render json: {:Lines => serialized_routes}
       # response = fetch_data(RAIL_LINES_URL, nil)
-      # $redis.set('lines', response)
+      # $redis.set('sea-lines', response)
     end
   end
 
