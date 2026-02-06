@@ -85,7 +85,6 @@ function lineSearch(event) {
     .then(response => response.json())
     .then(data => {
         if (data.error) {
-            debugger
             return displayError(data.message)
         }
         loaderNotification(...data.alerts)

@@ -64,8 +64,13 @@ class MetroController < ApplicationController
 
   def stations
     if params[:Linecode]
-      
-      render json: {error: true, message: "stations API not implemented for Seattle line codes", status: 501}.to_json
+      # TODO: implement redis for linecode station list
+      stations = RailRoute.find(params[:Linecode]).ordered_stations
+      serialized_stations = stations.map {|s| StationListSerializer.new(s).to_serialized_json}
+      render json: {
+        alerts: [],
+        stations: JSON.parse(serialized_stations.to_json)
+      }.to_json
     else
       unless $redis.exists?('sea-allStations')
         response = Station.ordered_stations
