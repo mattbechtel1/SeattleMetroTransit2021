@@ -5,7 +5,7 @@ const lostSound = new Audio('./assets/259172__xtrgamr__uhoh.wav');
 document.addEventListener('DOMContentLoaded', function() {
     fetch(`${baseUrl}/metro/alerts`) // puts metro alerts into cache
 
-    document.getElementById('search-by-stop').addEventListener('click', () => popUpSearch(stopSearch, 'Enter stop #'));
+    document.getElementById('search-by-stop').addEventListener('click', () => popUpSearch(stopSearch, 'Enter 7-digit stop #'));
     document.getElementById('search-by-route').addEventListener('click', function() {
         popUpSearch(routeSearch, 'Enter bus route #');
         
@@ -66,7 +66,12 @@ function stopSearch(event) {
     const busStop = form.queryData.value.toString();
     let stopId;
 
-    stopId = busStop;
+    if (busStop.length !== 7 ) {
+        errorNotification('Invalid stop number')
+        return
+    } else {
+        stopId = busStop;
+    }
     
     loaderNotification("Getting bus schedule for your stop...")
 
@@ -88,18 +93,17 @@ function routeSearch(event, format = 'metro') {
 
     const form = event.currentTarget
     let query = form.queryData.value.toString()
-    // if (query.length > 4 && format == 'metro') {
-    //     errorNotification('Invalid route');
-    //     return;
-    // }
+    
+    if (query.length > 4 && format == 'metro') {
+        errorNotification('Invalid route');
+        return;
+    }
 
     function findUrl() {
         switch(format) {
             case 'metro': 
                 query = query.toUpperCase()
                 return `${baseUrl}/metro/busstops/?RouteID=${query}&IncludingVariations=true`
-            case 'circulator':
-                return `${baseUrl}/circulator/busstops/${query}`
             default: 
                 errorNotification("Unrecognized Agency")
                 throw "Unrecognized agency"
@@ -122,10 +126,6 @@ function routeSearch(event, format = 'metro') {
                     loaderNotification(...data.alerts)
                     break;
                 }
-            case 'circulator':
-                clearAndReturnNotification()
-                displayCirculatorStops(data.body.route)
-                break;
         }
     }
 
@@ -214,19 +214,9 @@ function getRoutes(routeList, format = 'metro') {
         select.appendChild(option)
     }
 
-    function circulatorRoute(route) {
-        const option = document.createElement('option')
-        const routeTag = route.tag
-        option.value = routeTag
-        option.innerText = route.title
-
-        select.appendChild(option)
-    }
-
     function buildRoute(route) {
         switch(format) {
             case 'metro': metroRoute(route); break;
-            case 'circulator': circulatorRoute(route); break
         }
     }
     

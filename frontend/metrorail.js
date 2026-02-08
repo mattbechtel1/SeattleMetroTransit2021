@@ -20,9 +20,6 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch(`${baseUrl}/metro/lines`)
         .then(response => response.json())
         .then(data => {
-            if (data.error) {
-                return displayError(data.message)
-            }
             clearAndReturnNotification()
             displayLineSearch(data.Lines)
         })
@@ -84,9 +81,6 @@ function lineSearch(event) {
     fetch(`${baseUrl}/metro/stations?Linecode=${event.target.opt.value}`)
     .then(response => response.json())
     .then(data => {
-        if (data.error) {
-            return displayError(data.message)
-        }
         loaderNotification(...data.alerts)
         listStations(data.stations)
     })
