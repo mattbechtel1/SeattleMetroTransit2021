@@ -9,17 +9,14 @@ class RailStoptime < ApplicationRecord
   def headsign
     self.rail_trip.headsign
   end
-  alias DestinationName headsign
 
   def minutes_to_train
     ((self.real_departure_time - Time.now) / 60).floor()
   end
-  alias Min minutes_to_train
 
   def line_code
     self.rail_trip.rail_route.short_name
   end
-  alias Line line_code
 
   def self.trains_next_hour
     now = Time.new

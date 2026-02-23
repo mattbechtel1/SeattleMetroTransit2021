@@ -1,5 +1,6 @@
 class Station < ApplicationRecord
     acts_as_copy_target
+    belongs_to :main_station, class_name: "Station", foreign_key: :stop_id
     has_many :platforms, class_name: "Station", foreign_key: :stop_id
     has_many :rail_stoptimes
     alias_attribute :Code, :id
@@ -17,5 +18,8 @@ class Station < ApplicationRecord
             self.rail_stoptimes.trains_next_hour
         end
     end
-    alias Trains train_predictions
+
+    def station
+        self.main_station || self
+    end
 end

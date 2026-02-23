@@ -3,6 +3,8 @@ require 'protobuf'
 require 'google/transit/gtfs-realtime.pb'
 require 'json'
 
+ST_ALERTS_URL = 'https://s3.amazonaws.com/st-service-alerts-prod/alerts.pb' 
+
 class MetroController < ApplicationController
   before_action :check_redis
 
@@ -68,7 +70,7 @@ class MetroController < ApplicationController
       stations = RailRoute.find(params[:Linecode]).ordered_stations
       serialized_stations = stations.map {|s| StationListSerializer.new(s).to_serialized_json}
       render json: {
-        alerts: [],
+        alerts: $redis.lrange("sea-alert-#{params[:Linecode]}", 0, -1),
         stations: JSON.parse(serialized_stations.to_json)
       }.to_json
     else
@@ -85,9 +87,13 @@ class MetroController < ApplicationController
     unless $redis.exists?("sea-station-#{params[:station_code]}")
       s = Station.find(params[:station_code])
       serialized_station = StationSerializer.new(s).to_serialized_json
-      $redis.setex("sea-station-#{params[:station_code]}", THIRD_MINUTE, serialized_station.to_json)
+      $redis.setex("sea-station-#{params[:station_code]}", THIRD_MINUTE, serialized_station)
     end
-    render json: JSON.parse($redis.get("sea-station-#{params[:station_code]}"))
+    render json: {
+      alerts: $redis.lrange("sea-alert-station-#{params[:station_code]}", 0, -1),
+    }.merge(
+      JSON.parse($redis.get("sea-station-#{params[:station_code]}"))
+    ).to_json
   end
 
   def lines
@@ -105,7 +111,25 @@ class MetroController < ApplicationController
 
   # alerts does not return data to the frontend
   def alerts
-      render json: {error: true, message: "alerts API not implemented", status: 501}
+    unless $redis.get('sea-alert-times')
+      train_response = fetch_data(ST_ALERTS_URL, "{body}")
+      train_feed = Transit_realtime::FeedMessage.decode(train_response)
+      train_feed.entity.each do |entity|
+        entity.alert.informed_entity.each do |alert|
+          if alert.stop_id.empty?
+            $redis.rpush("sea-alert-#{alert.route_id}", entity.alert.description_text.translation[0].text)
+            $redis.expire("sea-alert-#{alert.route_id}", TEN_MINUTES)
+          else
+            primary_station_id = Station.find(alert.stop_id).station.id
+            $redis.rpush("sea-alert-station-#{primary_station_id}", entity.alert.description_text.translation[0].text)
+            $redis.expire("sea-alert-station-#{primary_station_id}", TEN_MINUTES)
+          end
+        end
+      end
+      
+      $redis.setex('sea-alert-times', TEN_MINUTES, true)
+      render json: train_feed
+    end
   end
 
   private
