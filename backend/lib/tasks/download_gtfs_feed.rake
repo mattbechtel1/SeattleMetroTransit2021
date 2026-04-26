@@ -82,7 +82,7 @@ def clean_large_file file_name, column_hash, model
     end
 end
 
-def clean_file file_name, column_hash
+def clean_file file_name, column_hash, transforms = {}
     Rails.logger.debug "Cleaning " + file_name
     csv_table = CSV.read(file_name, headers: true)
     Rails.logger.debug "Deleting extra columns"
@@ -94,7 +94,8 @@ def clean_file file_name, column_hash
     Rails.logger.debug "Opening " + file_name
     CSV.open("#{file_name}.out", "w+") do |csv|
         csv << csv_table.headers
-        csv_table.each { |row| 
+        csv_table.each { |row|
+            transforms.each { |col, fn| row[col] = fn.call(row[col]) }
             csv << row
         }
     end
@@ -180,7 +181,7 @@ namespace :update_gtfs_data do
 end
 
 
-def process_file file, model, column_map, sound_transit = false
+def process_file file, model, column_map, sound_transit = false, transforms = {}
     Rails.logger.debug 'Processing ' + model.name
     model.delete_all
     if sound_transit
@@ -192,7 +193,7 @@ def process_file file, model, column_map, sound_transit = false
     file_size = File.size(file_name)
     Rails.logger.debug file_name + " size: " + file_size.to_s
     if file_size < 10000000
-        clean_file(file_name, column_map)
+        clean_file(file_name, column_map, transforms)
         result = model.copy_from "#{file_name}.out" , :map => column_map, encoding: "bom|utf-8"
         Rails.logger.debug 'Finished processing ' + model.name
         result.clear
@@ -341,7 +342,9 @@ def stations_copy
         'tts_stop_name' => 'full_stop_name',
         'platform_code' => 'platform_code'
     }
-    process_file "stops.txt", Station, stations_map, true
+    # GTFS wheelchair_boarding is 0/1/2; map to boolean (0=null, 1=true, 2=false)
+    wheelchair_transform = ->(val) { {'1' => 't', '2' => 'f'}.fetch(val, nil) }
+    process_file "stops.txt", Station, stations_map, true, {'wheelchair_boarding' => wheelchair_transform}
 end
 
 def stoptimes_copy
