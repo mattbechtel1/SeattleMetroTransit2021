@@ -43,24 +43,22 @@ class Stoptime < ApplicationRecord
   alias Minutes minutes_to_bus
 
   def self.buses_next_hour
-    # Need to add late night logic here
     now = Time.new
+    date = service_date(now)
     if now.hour < 23 && now.hour > 3
-      date = Date.today
       formatted_now = now.strftime("%H:%M:%S")
       hour_from_now = (now + 3600).strftime("%H:%M:%S")
-    elsif now.hour === 23
-      date = Date.today
+    elsif now.hour == 23
       formatted_now = now.strftime("%H:%M:%S")
       hour_from_now = "24:" + now.strftime("%M:%S")
     else
-      date = Date.yesterday
       formatted_now = (now.hour + 24).to_s + now.strftime(":%M:%S")
       hour_from_now = (now.hour + 25).to_s + now.strftime(":%M:%S")
     end
+    eligible_calendar_ids = Calendar.service_ids_active_on(date)
     Stoptime.where(
       "departure_time >= ? AND departure_time < ?", formatted_now, hour_from_now
-    ).joins(trip: :calendar).where("calendars.start_date <= ? AND calendars.end_date >= ? AND calendars.#{adj_day_of_week} = 'true'", date.strftime("%Y%m%d"), date.strftime("%Y%m%d")
+    ).joins(:trip).where(trips: { calendar_id: eligible_calendar_ids }
     ).order(:departure_time)
   end
 

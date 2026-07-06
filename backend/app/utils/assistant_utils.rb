@@ -1,24 +1,7 @@
 module AssistantUtils
-    WEEK_MAP = {
-        'Sun' => 'sunday',
-        'Mon' => 'monday',
-        'Tue' => 'tuesday',
-        'Wed' => 'wednesday',
-        'Thu' => 'thursday',
-        'Fri' => 'friday',
-        'Sat' => 'saturday',
-    }
-
-    def day_of_week
-        WEEK_MAP[Date.today.strftime('%a')]
+    # Trips with GTFS times >= 24:00:00 belong to the previous calendar day's
+    # service, so anything before 4am local time is still part of yesterday's service.
+    def service_date(now = Time.now)
+        now.hour < 4 ? (now.to_date - 1) : now.to_date
     end
-
-    def adj_day_of_week
-        if Time.now.hour < 4
-            WEEK_MAP[Date.yesterday.strftime('%a')]
-        else
-            day_of_week
-        end
-    end
-
 end

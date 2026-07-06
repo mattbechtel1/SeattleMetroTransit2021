@@ -149,6 +149,8 @@ namespace :download_gtfs_feed do
         fare_rules_copy
         calendar_copy
         rail_calendar_copy
+        calendar_dates_copy
+        rail_calendar_dates_copy
         trips_copy
         rail_trips_copy
         stops_copy
@@ -404,4 +406,30 @@ def rail_calendar_copy
         'end_date' => 'end_date'
     }
     process_file "calendar.txt", RailCalendar, calendar_map, true
+end
+
+def calendar_dates_copy
+    calendar_dates_map = {
+        'service_id' => 'service_id',
+        'date' => 'date',
+        'exception_type' => 'exception_type',
+    }
+    if File.exist?(EXTRACTED_LOCATION + "calendar_dates.txt")
+        process_file "calendar_dates.txt", CalendarDate, calendar_dates_map
+    else
+        Rails.logger.warn "calendar_dates.txt not present in feed, skipping"
+    end
+end
+
+def rail_calendar_dates_copy
+    calendar_dates_map = {
+        'service_id' => 'service_id',
+        'date' => 'date',
+        'exception_type' => 'exception_type',
+    }
+    if File.exist?(ST_EXTRACTED_LOCATION + "calendar_dates.txt")
+        process_file "calendar_dates.txt", RailCalendarDate, calendar_dates_map, true
+    else
+        Rails.logger.warn "calendar_dates.txt not present in feed, skipping"
+    end
 end

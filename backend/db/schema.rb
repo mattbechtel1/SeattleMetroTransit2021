@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_11_30_235526) do
+ActiveRecord::Schema[7.2].define(version: 2026_07_05_000002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -22,6 +22,14 @@ ActiveRecord::Schema[7.2].define(version: 2025_11_30_235526) do
     t.string "phone"
     t.string "fare_url"
     t.index ["agency_code"], name: "index_agencies_on_agency_code", unique: true
+  end
+
+  create_table "calendar_dates", force: :cascade do |t|
+    t.bigint "service_id", null: false
+    t.integer "date", null: false
+    t.integer "exception_type", null: false
+    t.index ["date"], name: "index_calendar_dates_on_date"
+    t.index ["service_id", "date"], name: "index_calendar_dates_on_service_id_and_date", unique: true
   end
 
   create_table "calendars", force: :cascade do |t|
@@ -58,6 +66,14 @@ ActiveRecord::Schema[7.2].define(version: 2025_11_30_235526) do
     t.string "permanent_desc"
     t.index ["user_id", "lookup"], name: "index_favorites_on_user_id_and_lookup", unique: true
     t.index ["user_id"], name: "index_favorites_on_user_id"
+  end
+
+  create_table "rail_calendar_dates", force: :cascade do |t|
+    t.string "service_id", null: false
+    t.integer "date", null: false
+    t.integer "exception_type", null: false
+    t.index ["date"], name: "index_rail_calendar_dates_on_date"
+    t.index ["service_id", "date"], name: "index_rail_calendar_dates_on_service_id_and_date", unique: true
   end
 
   create_table "rail_calendars", id: :string, force: :cascade do |t|
