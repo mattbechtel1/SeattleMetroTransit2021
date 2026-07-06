@@ -28,4 +28,14 @@ class StoptimeTest < ActiveSupport::TestCase
       assert_equal 1, predictions.size
     end
   end
+
+  test "service_date resolves to the previous day before 4am and the current day at/after 4am, in Pacific time" do
+    travel_to Time.zone.local(2026, 1, 5, 2, 0, 0) do
+      assert_equal Date.new(2026, 1, 4), Stoptime.service_date
+    end
+
+    travel_to Time.zone.local(2026, 1, 5, 5, 0, 0) do
+      assert_equal Date.new(2026, 1, 5), Stoptime.service_date
+    end
+  end
 end

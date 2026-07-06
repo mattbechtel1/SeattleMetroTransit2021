@@ -19,7 +19,7 @@ class RailStoptime < ApplicationRecord
   end
 
   def self.trains_next_hour
-    now = Time.new
+    now = Time.zone.now
     date = service_date(now)
     if now.hour < 23 && now.hour > 3
       formatted_now = now.strftime("%H:%M:%S")

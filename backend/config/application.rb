@@ -33,6 +33,10 @@ module Metrobus2020
     config.load_defaults 8.0
     config.active_storage.variant_processor = :disabled
 
+    # Both King County Metro and Sound Transit are Seattle-area agencies;
+    # GTFS service-day boundaries are defined in Pacific local time.
+    config.time_zone = "Pacific Time (US & Canada)"
+
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration can go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded after loading

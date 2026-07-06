@@ -43,7 +43,7 @@ class Stoptime < ApplicationRecord
   alias Minutes minutes_to_bus
 
   def self.buses_next_hour
-    now = Time.new
+    now = Time.zone.now
     date = service_date(now)
     if now.hour < 23 && now.hour > 3
       formatted_now = now.strftime("%H:%M:%S")
